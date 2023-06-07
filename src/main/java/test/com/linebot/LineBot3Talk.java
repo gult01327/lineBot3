@@ -31,9 +31,10 @@ public class LineBot3Talk {
 	}
 	
 	@EventMapping
-	public LocationMessage handleLocationMessageEvent(MessageEvent<TextMessageContent> event) {
+	public TextMessage handleLocationMessageEvent(MessageEvent<TextMessageContent> event) {
 		System.out.println("event: " + event);
-		return new LocationMessage("location","Tokyo",35.65910807942215,139.70372892916203);
+//		return new LocationMessage("location","Tokyo",35.65910807942215,139.70372892916203);
+		return new TextMessage("笑死");
 
 	}
 	

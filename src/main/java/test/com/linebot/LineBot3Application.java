@@ -18,7 +18,7 @@ public class LineBot3Application {
 	}
 	@GetMapping("/test")
 	public ResponseEntity<String> test() {
-		return new ResponseEntity<String>("Hello FARMER123", HttpStatus.OK);
+		return new ResponseEntity<String>("Hello FARMERTEST", HttpStatus.OK);
 	}
 
 }

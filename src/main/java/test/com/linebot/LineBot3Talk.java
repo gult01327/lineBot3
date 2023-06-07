@@ -4,6 +4,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.linecorp.bot.model.event.Event;
 import com.linecorp.bot.model.event.MessageEvent;
 import com.linecorp.bot.model.event.message.StickerMessageContent;
@@ -17,14 +20,21 @@ import com.linecorp.bot.spring.boot.annotation.LineMessageHandler;
 
 @LineMessageHandler
 public class LineBot3Talk {
+	private static final Logger logger = LoggerFactory.getLogger(LineBot3Talk.class);
+	
 	@EventMapping
 	public void handle(MessageEvent<TextMessageContent> event) {
 		String originalMessageText = event.getMessage().getText();
-		System.out.println("event: " + event);
+		System.out.println("Hello, Heroku log!");
+		logger.info("Hello, Heroku log!");
+		
 		if(originalMessageText.equals("123")) {
-			
+			System.out.println("我要學你");
+			logger.info("我要學你");
 			handleTextMessageEvent(event);
 		}else {
+			System.out.println("我要笑你");
+			logger.info("我要笑你");
 			handleLocationMessageEvent(event);
 		}	
 		return;
@@ -33,7 +43,8 @@ public class LineBot3Talk {
 	@EventMapping
 	public TextMessage handleTextMessageEvent(MessageEvent<TextMessageContent> event) {
 		String originalMessageText = event.getMessage().getText();
-		System.out.println("event: " + event);
+		System.out.println("我要學你2");
+		logger.info("我要學你2");
 		// 收到文字訊息做回覆
 		return new TextMessage(originalMessageText);
 	}
@@ -41,6 +52,8 @@ public class LineBot3Talk {
 	@EventMapping
 	public TextMessage handleLocationMessageEvent(MessageEvent<TextMessageContent> event) {
 		System.out.println("event: " + event);
+		System.out.println("我要笑你2");
+		logger.info("我要笑你2");
 //		return new LocationMessage("location","Tokyo",35.65910807942215,139.70372892916203);
 		return new TextMessage("笑死");
 

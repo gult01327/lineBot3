@@ -5,6 +5,7 @@ import java.net.URISyntaxException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.linecorp.bot.client.LineMessagingClient;
 import com.linecorp.bot.model.ReplyMessage;
@@ -19,20 +20,25 @@ import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.spring.boot.annotation.EventMapping;
 import com.linecorp.bot.spring.boot.annotation.LineMessageHandler;
 
+import lombok.extern.slf4j.Slf4j;
+
 @LineMessageHandler
+@Slf4j
 public class LineBot3Talk {
 	private static final Logger logger = LoggerFactory.getLogger(LineBot3Talk.class);
+
+	@Value("line.bot.channel-token")
+	private String TOKEN;
 
 	@EventMapping
 	public void handle(MessageEvent<TextMessageContent> event) {
 		String originalMessageText = event.getMessage().getText();
-		System.out.println("Hello, Heroku log!");
-
+		logger.info("Hello, Heroku log!");
 		if (originalMessageText.equals("123")) {
-			System.out.println("我要學你");
+			logger.info("我要學你");
 			handleTextMessageEvent(event);
 		} else {
-			System.out.println("我要笑你");
+			logger.info("我要笑你");
 			handleLocationMessageEvent(event);
 		}
 	}
@@ -47,7 +53,7 @@ public class LineBot3Talk {
 //			  "longitude": 139.72922
 //			}
 //		String originalMessageText = event.getMessage().getText();
-		System.out.println("我要學你2");
+		logger.info("我要學你2");
 		// 收到文字訊息做回覆
 		Message replyMessage = new LocationMessage("location", "〒160-0004 東京都新宿区四谷一丁目6番1号", 35.687574, 139.72922);
 		reply(replyMessage, event.getReplyToken());
@@ -55,10 +61,10 @@ public class LineBot3Talk {
 
 	@EventMapping
 	public void handleTextMessageEvent(MessageEvent<TextMessageContent> event) {
-		System.out.println("event: " + event);
-		System.out.println("我要笑你2");
+		logger.info("event: " + event);
+		logger.info("我要笑你2");
 		TextMessage replyMessage = new TextMessage("笑死");
-		reply(replyMessage, event.getReplyToken());
+		reply(replyMessage, TOKEN);
 	}
 
 	private void reply(Message replyMessage, String replyToken) {
@@ -78,7 +84,7 @@ public class LineBot3Talk {
 	@EventMapping
 	public void handleDefaultMessageEvent(Event event) {
 		// 就是加入聊天室, 離開聊天室, 還有一些有的沒的事件
-		System.out.println("event: " + event);
+		logger.info("event: " + event);
 	}
 
 }

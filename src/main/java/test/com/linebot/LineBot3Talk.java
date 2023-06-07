@@ -17,15 +17,22 @@ import com.linecorp.bot.spring.boot.annotation.LineMessageHandler;
 
 @LineMessageHandler
 public class LineBot3Talk {
+	@EventMapping
+	public void handle(MessageEvent<TextMessageContent> event) {
+		String originalMessageText = event.getMessage().getText();
+		System.out.println("event: " + event);
+		if(originalMessageText.contains("在哪")||originalMessageText.contains("住哪")) {
+			handleLocationMessageEvent(event);
+		}else {
+			handleTextMessageEvent(event);
+		}	
+		return;
+	}
 	
 	@EventMapping
 	public TextMessage handleTextMessageEvent(MessageEvent<TextMessageContent> event) {
 		String originalMessageText = event.getMessage().getText();
 		System.out.println("event: " + event);
-		if(originalMessageText.contains("在哪")||originalMessageText.contains("住哪")) {
-			handleLocationMessageEvent(event);
-		}
-		
 		// 收到文字訊息做回覆
 		return new TextMessage(originalMessageText);
 	}

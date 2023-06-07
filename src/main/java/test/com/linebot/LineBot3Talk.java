@@ -21,7 +21,7 @@ public class LineBot3Talk {
 	public void handle(MessageEvent<TextMessageContent> event) {
 		String originalMessageText = event.getMessage().getText();
 		System.out.println("event: " + event);
-		if(originalMessageText.contains("在哪")||originalMessageText.contains("住哪")) {
+		if(originalMessageText.equals("123")) {
 			handleLocationMessageEvent(event);
 		}else {
 			handleTextMessageEvent(event);

@@ -22,9 +22,10 @@ public class LineBot3Talk {
 		String originalMessageText = event.getMessage().getText();
 		System.out.println("event: " + event);
 		if(originalMessageText.equals("123")) {
-			handleLocationMessageEvent(event);
-		}else {
+			
 			handleTextMessageEvent(event);
+		}else {
+			handleLocationMessageEvent(event);
 		}	
 		return;
 	}

@@ -5,7 +5,7 @@ import java.net.URISyntaxException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.linecorp.bot.client.LineMessagingClient;
 import com.linecorp.bot.model.ReplyMessage;
@@ -26,20 +26,19 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class LineBot3Talk {
 	private static final Logger logger = LoggerFactory.getLogger(LineBot3Talk.class);
-
-	@Value("line.bot.channel-token")
-	private String TOKEN;
-
+	@Autowired
+    private LineMessagingClient lineMessagingClient;
+	
 	@EventMapping
 	public void handle(MessageEvent<TextMessageContent> event) {
 		String originalMessageText = event.getMessage().getText();
 		logger.info("Hello, Heroku log!");
 		if (originalMessageText.equals("123")) {
 			logger.info("我要學你");
-			handleTextMessageEvent(event);
+			handleLocationMessageEvent(event);
 		} else {
 			logger.info("我要笑你");
-			handleLocationMessageEvent(event);
+			handleTextMessageEvent(event);
 		}
 	}
 
@@ -59,19 +58,23 @@ public class LineBot3Talk {
 		reply(replyMessage, event.getReplyToken());
 	}
 
-	@EventMapping
+//	@EventMapping
 	public void handleTextMessageEvent(MessageEvent<TextMessageContent> event) {
 		logger.info("event: " + event);
 		logger.info("我要笑你2");
 		TextMessage replyMessage = new TextMessage("笑死");
-		reply(replyMessage, TOKEN);
+		reply(replyMessage, event.getReplyToken());
 	}
 
 	private void reply(Message replyMessage, String replyToken) {
-		LineMessagingClient lineMessagingClient = LineMessagingClient.builder(replyToken).build();
 		ReplyMessage reply = new ReplyMessage(replyToken, replyMessage);
 		lineMessagingClient.replyMessage(reply);
 	}
+	
+//	private void reply2(Message replyMessage, String replyToken) {
+//		ReplyMessage reply = new ReplyMessage(replyToken, replyMessage);
+//		lineMessagingClient.replyMessage(reply);
+//	}
 
 	@EventMapping
 	public Message handleStickerMessageEvent(MessageEvent<StickerMessageContent> event) throws URISyntaxException {

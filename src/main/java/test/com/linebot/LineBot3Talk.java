@@ -9,6 +9,7 @@ import com.linecorp.bot.model.event.MessageEvent;
 import com.linecorp.bot.model.event.message.StickerMessageContent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
 import com.linecorp.bot.model.message.ImageMessage;
+import com.linecorp.bot.model.message.LocationMessage;
 import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.spring.boot.annotation.EventMapping;
@@ -20,9 +21,20 @@ public class LineBot3Talk {
 	@EventMapping
 	public TextMessage handleTextMessageEvent(MessageEvent<TextMessageContent> event) {
 		String originalMessageText = event.getMessage().getText();
-		// 收到文字訊息做回覆
 		System.out.println("event: " + event);
+		if(originalMessageText.contains("在哪")||originalMessageText.contains("住哪")) {
+			handleLocationMessageEvent(event);
+		}
+		
+		// 收到文字訊息做回覆
 		return new TextMessage(originalMessageText);
+	}
+	
+	@EventMapping
+	public LocationMessage handleLocationMessageEvent(MessageEvent<TextMessageContent> event) {
+		System.out.println("event: " + event);
+		return new LocationMessage("location","Tokyo",35.65910807942215,139.70372892916203);
+
 	}
 	
 	@EventMapping

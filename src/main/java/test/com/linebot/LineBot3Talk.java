@@ -11,6 +11,8 @@ import java.net.URLEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -23,6 +25,7 @@ import com.linecorp.bot.client.LineMessagingClientBuilder;
 import com.linecorp.bot.model.ReplyMessage;
 import com.linecorp.bot.model.event.Event;
 import com.linecorp.bot.model.event.MessageEvent;
+import com.linecorp.bot.model.event.message.LocationMessageContent;
 import com.linecorp.bot.model.event.message.StickerMessageContent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
 import com.linecorp.bot.model.message.ImageMessage;
@@ -61,13 +64,22 @@ public class LineBot3Talk {
 			}
 		}else if(originalMessageText.equals("查詢附近飲料店")){
 			//裝置當前位置
-			String location = getCurrentLocation();
-	        System.out.println("當前位置: " + location);
-	        //附近飲料店
-	        String nearbyPlaces = getNearbyPlaces(location, "飲料店");
-	        System.out.println("附近的飲料店: " + nearbyPlaces);
-	        //傳送多筆座標
-	        handleNearLocationMessageEvent(event,nearbyPlaces);
+//			String location = getCurrentLocation();
+//	        System.out.println("當前位置: " + location);
+	        
+	        String locationNew =handleWebhookEvent(event);
+	        System.out.println("當前位置: " + locationNew);
+	        if(!locationNew.equals("X")) {
+		        //附近飲料店
+		        String nearbyPlaces = getNearbyPlaces(locationNew, "飲料店");
+		        System.out.println("附近的飲料店: " + nearbyPlaces);
+		        //傳送多筆座標
+		        handleNearLocationMessageEvent(event,nearbyPlaces);
+	        }else {
+	        	TextMessage replyMessage = new TextMessage("取得當前位置失敗");
+	    		reply(replyMessage, event.getReplyToken());
+	        }
+
 			
 		}else{
 			logger.info("笑死");
@@ -157,16 +169,34 @@ public class LineBot3Talk {
 		logger.info("event: " + event);
 	}
 	
-    
-    public static void main(String[] args) {
-        String location = getCurrentLocation();
-        System.out.println("當前位置: " + location);
-
-        String nearbyPlaces = getNearbyPlaces(location, "飲料店");
-        System.out.println("附近的飲料店: " + nearbyPlaces);
-        mainNearLocationMessageEvent(nearbyPlaces);
-        
+    @PostMapping("/webhook")
+    public String handleWebhookEvent(@RequestBody Event event) {
+        if (event instanceof MessageEvent) {
+            MessageEvent<?> messageEvent = (MessageEvent<?>) event;
+            if (messageEvent.getMessage() instanceof LocationMessageContent) {
+                LocationMessageContent locationMessageContent = (LocationMessageContent) messageEvent.getMessage();
+                double latitude = locationMessageContent.getLatitude();
+                double longitude = locationMessageContent.getLongitude();
+                String latitudeStr = String.valueOf(latitude);
+                String longitudeStr = String.valueOf(longitude);
+                System.out.println("成功取得位置: 緯度：" + latitudeStr+",經度："+longitudeStr);
+                return latitudeStr+","+longitudeStr;
+                
+            }
+        }
+        System.out.println("取得位置失敗");
+		return "X";
     }
+    
+//    public static void main(String[] args) {
+//        String location = getCurrentLocation();
+//        System.out.println("當前位置: " + location);
+//
+//        String nearbyPlaces = getNearbyPlaces(location, "飲料店");
+//        System.out.println("附近的飲料店: " + nearbyPlaces);
+//        mainNearLocationMessageEvent(nearbyPlaces);
+//        
+//    }
     
 	//回覆多筆座標
 	public static void mainNearLocationMessageEvent(String nearbyPlaces) {

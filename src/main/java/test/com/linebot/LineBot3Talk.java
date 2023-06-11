@@ -121,9 +121,9 @@ public class LineBot3Talk {
 			for (int i = 0; i < messageCount; i += maxMessagesPerRequest) {
 			    int endIndex = Math.min(i + maxMessagesPerRequest, messageCount);
 			    List<Message> subMessages = messages.subList(i, endIndex);
-			    System.out.println("發送消息---i:" + i + ",endIndex:" + endIndex );
+			    System.out.println("發送消息-i:" + i + ",endIndex:" + endIndex );
 			    ReplyMessage replyMessage = new ReplyMessage(replyToken, subMessages);
-			    lineMessagingClient.replyMessage(replyMessage);
+			    lineMessagingClient.replyMessage(replyMessage).join(); // 使用 .join() 方法等待異步操作完成
 			}
 			
 		} else {

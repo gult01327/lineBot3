@@ -97,25 +97,44 @@ public class LineBot3Talk {
 		reply(replyMessage, event.getReplyToken());
 	}
 	
-	//回覆多筆座標
-	public void handleNearLocationMessageEvent(MessageEvent<TextMessageContent> event,String nearbyPlaces) {
-		logger.info("SUCCESS:多筆座標");
-		if(nearbyPlaces.length()>1) {
+	// 回覆多筆座標
+	public void handleNearLocationMessageEvent(MessageEvent<TextMessageContent> event, String nearbyPlaces) {
+		String replyToken = event.getReplyToken();
+		LineMessagingClient client = LineMessagingClient.builder(replyToken).build();
+
+		logger.info("準備回傳多筆座標");
+		if (nearbyPlaces.length() > 1) {
+			// 將資料拆分並寫入messages
 			List<Message> messages = new ArrayList<>();
 			String[] token = nearbyPlaces.split(";");
-			for(int i = 0;i<token.length;i++) {
-				String[] object =token[i].split(",");
-				String name=(object[0]);
-				double lat=(Double.parseDouble(object[1]));
-				double lng=(Double.parseDouble(object[2]));
-				Message replyMessage = new LocationMessage("location",name,lat,lng);
+			for (int i = 0; i < token.length; i++) {
+				String[] object = token[i].split(",");
+				String name = (object[0]);
+				double lat = (Double.parseDouble(object[1]));
+				double lng = (Double.parseDouble(object[2]));
+				Message replyMessage = new LocationMessage("location", name, lat, lng);
 				messages.add(replyMessage);
-				System.out.println("飲料店:" + name+",緯度:"+lat+",經度:"+lng);
+				System.out.println("飲料店:" + name + ",緯度:" + lat + ",經度:" + lng);
 			}
-			replyList(messages, event.getReplyToken());
-		}else {
+
+			// 發送回覆訊息
+			int messageCount = messages.size();
+			int maxMessagesPerRequest = 5;
+			int remainingMessages = messageCount;
+			int startIndex = 0;
+			
+			while (remainingMessages > 0) {
+				int endIndex = Math.min(startIndex + maxMessagesPerRequest, messageCount);
+				List<Message> subMessages = messages.subList(startIndex, endIndex);
+				ReplyMessage replyMessage = new ReplyMessage(event.getReplyToken(), subMessages);
+				client.replyMessage(replyMessage);
+
+				remainingMessages -= maxMessagesPerRequest;
+				startIndex += maxMessagesPerRequest;
+			}
+		} else {
 			TextMessage replyMessage = new TextMessage("查無附近飲料店");
-    		reply(replyMessage, event.getReplyToken());
+			reply(replyMessage, event.getReplyToken());
 		}
 
 	}

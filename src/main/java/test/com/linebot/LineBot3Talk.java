@@ -349,8 +349,7 @@ public class LineBot3Talk {
 	        // 建立Google Maps API客戶端
 	        GeoApiContext context = new GeoApiContext.Builder().apiKey(GOOGLE_MAPS_API_KEY).build();
 	        
-	        String[] latlng = location.split(";");
-
+	        String[] latlng = location.split(",");
 	        // 查詢附近飲料店
 	        double latitude = Double.parseDouble(latlng[0]);  // 使用者的緯度
 	        double longitude = Double.parseDouble(latlng[1]);  // 使用者的經度

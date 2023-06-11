@@ -368,10 +368,10 @@ public class LineBot3Talk {
 	                                        .aspectMode(Image.ImageAspectMode.Cover)
 	                                        .aspectRatio(Image.ImageAspectRatio.R1TO1)
 	                                        .margin(FlexMarginSize.MD)
-	                                        .action(handleLocatio(event,resultLatitude,resultLongitude))
 	                                        .build()
 	                        ))
 	                        .build())
+	                .action(handleLocatio(event,resultLatitude,resultLongitude))
 	                .build();
 
 	        flexBubbles.add(bubble);

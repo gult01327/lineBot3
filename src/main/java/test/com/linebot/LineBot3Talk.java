@@ -304,52 +304,6 @@ public class LineBot3Talk {
         return "無法獲取當前位置信息。";
     }
     */
-	/**
-	 public static void main(String[] args) throws Exception {
-		 	String GOOGLE_MAPS_API_KEY = "AIzaSyBGQRnDgWX0c4WJbUNiBxU6MbOvDFPD_QA";
-		    String LINE_CHANNEL_ACCESS_TOKEN = "u2559vPjHa8bDO7hrn0C232jQHdcC2NG68Fo6bGl7VRxDc36eT7w74pWlM0SzbIsCvxEKPJa7byGFX9KIOGDYz5TUFoYnig574mtiCFY5NF3S73DpPstr8rmYejYCDpm5QvFgNZL8mRwlhHiykrzNQdB04t89/1O/w1cDnyilFU=";
-	        // 初始化Line Messaging Client
-	        LineMessagingClient lineMessagingClient = LineMessagingClient.builder(LINE_CHANNEL_ACCESS_TOKEN).build();
-
-	        // 建立Google Maps API客戶端
-	        GeoApiContext context = new GeoApiContext.Builder().apiKey(GOOGLE_MAPS_API_KEY).build();
-
-	        // 查詢附近飲料店
-	        double latitude = 25.06752;  // 使用者的緯度
-	        double longitude = 121.585664;  // 使用者的經度
-	        int radius = 1000;  // 搜尋半徑（單位：公尺）
-	        String type = "飲料店";  // 查詢類型（例如：cafe, restaurant, bar等）
-
-	        NearbySearchRequest request = new NearbySearchRequest(context)
-	                .location(new LatLng(latitude, longitude))
-	                .radius(radius)
-	                .keyword(type);
-
-	        PlacesSearchResponse response = request.await();
-
-	        // 建立Flex Message列表
-	        List<FlexMessage> flexMessages = new ArrayList<>();
-
-	        // 取得搜尋結果的前5筆資料
-	        PlacesSearchResult[] results = response.results;
-	        int maxResults = 5;
-	        if (results.length < maxResults) {
-	            maxResults = results.length;
-	        }
-
-	        for (int i = 0; i < maxResults; i++) {
-	            PlacesSearchResult result = results[i];
-	            String name = result.name;
-	            String address = result.vicinity;
-	            double rating = result.rating;
-	            URI photoUrl = new URI("");  // 您可以從搜尋結果中取得照片URL
-
-	            // 建立訊息樣板
-	            FlexMessage flexMessage = createFlexMessage(name, address, rating, photoUrl);
-	            flexMessages.add(flexMessage);
-	        }
-	 }
-	 * @param event */
 	 
 	public static void handleNearLocationTemplate(MessageEvent<TextMessageContent> event, String location) throws Exception {
 	    String GOOGLE_MAPS_API_KEY = "AIzaSyBGQRnDgWX0c4WJbUNiBxU6MbOvDFPD_QA";
@@ -385,8 +339,8 @@ public class LineBot3Talk {
 	        String name = result.name;
 	        String address = result.vicinity;
 	        double rating = result.rating;
-	        URI photoUrl = new URI("https://media.nownews.com/nn_media/thumbnail/2019/10/1570089924-27a9b9c9d7facd3422fe4610dd8ebe42-696x386.png");  // 您可以从搜索结果中获取照片URL
-
+//	        URI photoUrl = new URI("https://media.nownews.com/nn_media/thumbnail/2019/10/1570089924-27a9b9c9d7facd3422fe4610dd8ebe42-696x386.png");
+	        URI photoUrl = new URI("https://www.google.com/url?sa=i&url=https%3A%2F%2F616pic.com%2Fsucai%2F158ixylqe.html&psig=AOvVaw3EMRQYsFtlrSle5m0atLcm&ust=1686577418981000&source=images&cd=vfe&ved=0CBEQjRxqFwoTCLC5ttGsu_8CFQAAAAAdAAAAABAa");
 	        // 建立消息模板
 	        Bubble bubble = Bubble.builder()
 	                .body(Box.builder()

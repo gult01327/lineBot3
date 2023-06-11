@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -20,6 +21,7 @@ import com.google.gson.JsonParser;
 import com.google.maps.GeoApiContext;
 import com.google.maps.GeocodingApi;
 import com.google.maps.model.GeocodingResult;
+import com.google.maps.model.LatLng;
 import com.linecorp.bot.client.LineMessagingClient;
 import com.linecorp.bot.client.LineMessagingClientBuilder;
 import com.linecorp.bot.model.ReplyMessage;
@@ -38,6 +40,7 @@ import com.linecorp.bot.spring.boot.annotation.LineMessageHandler;
 
 import lombok.extern.slf4j.Slf4j;
 
+@RestController
 @LineMessageHandler
 @Slf4j
 public class LineBot3Talk {
@@ -45,9 +48,6 @@ public class LineBot3Talk {
 	@Autowired
     private LineMessagingClient lineMessagingClient;
 
-	
-	String  GOOGLE_API_KEY = "AIzaSyBGQRnDgWX0c4WJbUNiBxU6MbOvDFPD_QA";
-	
 	@EventMapping
 	public void handle(MessageEvent<TextMessageContent> event) {
 		String originalMessageText = event.getMessage().getText();
@@ -62,25 +62,25 @@ public class LineBot3Talk {
 			} catch (URISyntaxException e) {
 				logger.info("我瘋子失敗");
 			}
-		}else if(originalMessageText.equals("查詢附近飲料店")){
-			//裝置當前位置
-//			String location = getCurrentLocation();
-//	        System.out.println("當前位置: " + location);
+		}else if(originalMessageText.substring(0).equals("?")&& originalMessageText.length()>1){
+			//地址查詢：以？開頭並輸入地址
+			String place = originalMessageText.substring(1);
+	        System.out.println("輸入地址:" + place);
 	        
-	        String locationNew =handleWebhookEvent(event);
-	        System.out.println("當前位置: " + locationNew);
-	        if(!locationNew.equals("X")) {
+	        //取得地址緯度、經度
+	        String location = getGoogleMapLocation(place);
+	        System.out.println("取得地址緯度、經度:" + location);
+	        
+	        if(!location.equals("X")) {
 		        //附近飲料店
-		        String nearbyPlaces = getNearbyPlaces(locationNew, "飲料店");
+		        String nearbyPlaces = getNearbyPlaces(location, "飲料店");
 		        System.out.println("附近的飲料店: " + nearbyPlaces);
 		        //傳送多筆座標
 		        handleNearLocationMessageEvent(event,nearbyPlaces);
 	        }else {
-	        	TextMessage replyMessage = new TextMessage("取得當前位置失敗");
+	        	TextMessage replyMessage = new TextMessage("取得地址失敗");
 	    		reply(replyMessage, event.getReplyToken());
 	        }
-
-			
 		}else{
 			logger.info("笑死");
 			handleTextMessageEvent(event);
@@ -134,22 +134,28 @@ public class LineBot3Talk {
 		lineMessagingClient.replyMessage(reply);
 	}
 	
-//    private String getGoogleMapLocation(String address) {
-//        GeoApiContext context = new GeoApiContext.Builder().apiKey(GOOGLE_API_KEY).build();
-//        try {
-//            GeocodingResult[] results = GeocodingApi.geocode(context, address).await();
-//            if (results.length > 0) {
-//            	logger.info("有找到位置");
-//                GeocodingResult result = results[0];
-//                return result.formattedAddress;
-//            } else {
-//                return "未找到位置";
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return "獲取位置信息發收錯誤。";
-//        }
-//    }
+	//獲取輸入地址的經緯度
+    private String getGoogleMapLocation(String address) {
+    	//google map金鑰
+    	String  GOOGLE_API_KEY = "AIzaSyBGQRnDgWX0c4WJbUNiBxU6MbOvDFPD_QA";
+        GeoApiContext context = new GeoApiContext.Builder().apiKey(GOOGLE_API_KEY).build();
+        try {
+            GeocodingResult[] results = GeocodingApi.geocode(context, address).await();
+            if (results.length > 0) {
+                //取第一個结果的經緯度
+                LatLng location = results[0].geometry.location;
+                System.out.println("緯度: " + location.lat);
+                System.out.println("經度: " + location.lng);
+                
+                return location.lat+"X"+location.lng;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "獲取位置信息發收錯誤";
+        }
+        System.out.println("獲取位置信息發收錯誤");
+		return "X";
+    }
     
     private void replyTextMessage(String replyToken, String message) {
         lineMessagingClient.replyMessage(new ReplyMessage(replyToken, new TextMessage(message)));
@@ -168,25 +174,6 @@ public class LineBot3Talk {
 		// 就是加入聊天室, 離開聊天室, 還有一些有的沒的事件
 		logger.info("event: " + event);
 	}
-	
-    @PostMapping("/webhook")
-    public String handleWebhookEvent(@RequestBody Event event) {
-        if (event instanceof MessageEvent) {
-            MessageEvent<?> messageEvent = (MessageEvent<?>) event;
-            if (messageEvent.getMessage() instanceof LocationMessageContent) {
-                LocationMessageContent locationMessageContent = (LocationMessageContent) messageEvent.getMessage();
-                double latitude = locationMessageContent.getLatitude();
-                double longitude = locationMessageContent.getLongitude();
-                String latitudeStr = String.valueOf(latitude);
-                String longitudeStr = String.valueOf(longitude);
-                System.out.println("成功取得位置: 緯度：" + latitudeStr+",經度："+longitudeStr);
-                return latitudeStr+","+longitudeStr;
-                
-            }
-        }
-        System.out.println("取得位置失敗");
-		return "X";
-    }
     
 //    public static void main(String[] args) {
 //        String location = getCurrentLocation();
@@ -209,7 +196,7 @@ public class LineBot3Talk {
 		}
 	}
     
-    //取得裝置當前位置
+    /**取得裝置當前位置(取到Server位置)
     private static String getCurrentLocation() {
     	try {
             // 獲取公網IP地址
@@ -258,6 +245,7 @@ public class LineBot3Talk {
 
         return "無法獲取當前位置信息。";
     }
+    */
     
     //取得附近飲料店：店名（緯度，經度）
     private static String getNearbyPlaces(String location, String keyword) {

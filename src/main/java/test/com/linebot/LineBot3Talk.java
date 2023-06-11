@@ -88,17 +88,16 @@ public class LineBot3Talk {
 			//地址查詢：以？開頭並輸入地址
 			String place = originalMessageText.substring(1);
 	        System.out.println("輸入地址:" + place);
+	        //取得地址緯度、經度
+	        String location = getGoogleMapLocation(place);
+	        System.out.println("取得地址緯度、經度:" + location);
 	        try {
-				handleNearLocationTemplate(place);
+				handleNearLocationTemplate(location);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 	        /**
-	        //取得地址緯度、經度
-	        String location = getGoogleMapLocation(place);
-	        System.out.println("取得地址緯度、經度:" + location);
-	        
 	        if(!location.equals("X")) {
 		        //附近飲料店
 		        String nearbyPlaces = getNearbyPlaces(location, "飲料店");
@@ -341,7 +340,7 @@ public class LineBot3Talk {
 	        }
 	 }*/
 	 
-	 public static void handleNearLocationTemplate(String place) throws Exception {
+	 public static void handleNearLocationTemplate(String location) throws Exception {
 		 	String GOOGLE_MAPS_API_KEY = "AIzaSyBGQRnDgWX0c4WJbUNiBxU6MbOvDFPD_QA";
 		    String LINE_CHANNEL_ACCESS_TOKEN = "u2559vPjHa8bDO7hrn0C232jQHdcC2NG68Fo6bGl7VRxDc36eT7w74pWlM0SzbIsCvxEKPJa7byGFX9KIOGDYz5TUFoYnig574mtiCFY5NF3S73DpPstr8rmYejYCDpm5QvFgNZL8mRwlhHiykrzNQdB04t89/1O/w1cDnyilFU=";
 	        // 初始化Line Messaging Client
@@ -350,7 +349,7 @@ public class LineBot3Talk {
 	        // 建立Google Maps API客戶端
 	        GeoApiContext context = new GeoApiContext.Builder().apiKey(GOOGLE_MAPS_API_KEY).build();
 	        
-	        String[] latlng = place.split(";");
+	        String[] latlng = location.split(";");
 
 	        // 查詢附近飲料店
 	        double latitude = Double.parseDouble(latlng[0]);  // 使用者的緯度

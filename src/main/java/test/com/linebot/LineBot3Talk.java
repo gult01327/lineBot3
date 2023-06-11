@@ -119,14 +119,14 @@ public class LineBot3Talk {
 			int messageCount = messages.size();
 
 			for (int i = 0; i < messageCount; i += maxMessagesPerRequest) {
-				LineMessagingClient client = LineMessagingClient.builder(replyToken).build();
 			    int endIndex = Math.min(i + maxMessagesPerRequest, messageCount);
 			    List<Message> subMessages = messages.subList(i, endIndex);
 			    System.out.println("發送消息-i:" + i + ",endIndex:" + endIndex );
 			    ReplyMessage replyMessage = new ReplyMessage(replyToken, subMessages);
-			    client.replyMessage(replyMessage).join(); // 使用 .join() 方法等待異步操作完成
+			    System.out.println("replyToken:" + replyToken + ",subMessages:" + subMessages );
+			    lineMessagingClient.replyMessage(replyMessage).join(); // 使用 .join() 方法等待異步操作完成
+			    System.out.println("replyMessage:" + replyMessage);
 			}
-			
 		} else {
 			TextMessage replyMessage = new TextMessage("查無附近飲料店");
 			reply(replyMessage, event.getReplyToken());
@@ -154,14 +154,14 @@ public class LineBot3Talk {
 	private void reply(Message replyMessage, String replyToken) {
 //		LineMessagingClient lineMessagingClient = LineMessagingClient.builder(replyToken).build();
 		ReplyMessage reply = new ReplyMessage(replyToken, replyMessage);
-		lineMessagingClient.replyMessage(reply).join();
+		lineMessagingClient.replyMessage(reply);
 	}
 	
 	//回傳多筆訊息
 	private void replyList(List<Message> messages, String replyToken) {
 //		LineMessagingClient lineMessagingClient = LineMessagingClient.builder(replyToken).build();
 		ReplyMessage reply = new ReplyMessage(replyToken, messages);
-		lineMessagingClient.replyMessage(reply).join();
+		lineMessagingClient.replyMessage(reply);
 	}
 	
 	//獲取輸入地址的經緯度
@@ -188,7 +188,7 @@ public class LineBot3Talk {
     }
     
     private void replyTextMessage(String replyToken, String message) {
-        lineMessagingClient.replyMessage(new ReplyMessage(replyToken, new TextMessage(message))).join();
+        lineMessagingClient.replyMessage(new ReplyMessage(replyToken, new TextMessage(message)));
     }
 	
 

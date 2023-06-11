@@ -25,6 +25,7 @@ import com.google.gson.JsonParser;
 import com.google.maps.GeoApiContext;
 import com.google.maps.GeocodingApi;
 import com.google.maps.NearbySearchRequest;
+import com.google.maps.PlacesApi;
 import com.google.maps.model.GeocodingResult;
 import com.google.maps.model.LatLng;
 import com.google.maps.model.PlaceType;
@@ -32,6 +33,7 @@ import com.google.maps.model.PlacesSearchResponse;
 import com.google.maps.model.PlacesSearchResult;
 import com.linecorp.bot.client.LineMessagingClient;
 import com.linecorp.bot.client.LineMessagingClientBuilder;
+import com.linecorp.bot.model.PushMessage;
 import com.linecorp.bot.model.ReplyMessage;
 import com.linecorp.bot.model.action.URIAction;
 import com.linecorp.bot.model.event.Event;
@@ -47,10 +49,12 @@ import com.linecorp.bot.model.message.StickerMessage;
 import com.linecorp.bot.model.message.TemplateMessage;
 import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.model.message.flex.component.Box;
+import com.linecorp.bot.model.message.flex.component.FlexComponent;
 import com.linecorp.bot.model.message.flex.component.Image;
 import com.linecorp.bot.model.message.flex.component.Text;
 import com.linecorp.bot.model.message.flex.component.Text.TextWeight;
 import com.linecorp.bot.model.message.flex.container.Bubble;
+import com.linecorp.bot.model.message.flex.container.Carousel;
 import com.linecorp.bot.model.message.flex.container.FlexContainer;
 import com.linecorp.bot.model.message.flex.unit.FlexFontSize;
 import com.linecorp.bot.model.message.flex.unit.FlexLayout;
@@ -92,7 +96,7 @@ public class LineBot3Talk {
 	        String location = getGoogleMapLocation(place);
 	        System.out.println("取得地址緯度、經度:" + location);
 	        try {
-				handleNearLocationTemplate(location);
+				handleNearLocationTemplate(event,location);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -150,8 +154,14 @@ public class LineBot3Talk {
 			    int endIndex = Math.min(i + maxMessagesPerRequest, messageCount);
 			    List<Message> subMessages = messages.subList(i, endIndex);
 			    System.out.println("發送消息-i:" + i + ",endIndex:" + endIndex );
+			    
+			    
 			    ReplyMessage replyMessage = new ReplyMessage(replyToken, subMessages);
 			    System.out.println("replyToken:" + replyToken + ",subMessages:" + subMessages );
+			    
+			 // 初始化Line Messaging Client
+			    LineMessagingClientBuilder builder = LineMessagingClient.builder("u2559vPjHa8bDO7hrn0C232jQHdcC2NG68Fo6bGl7VRxDc36eT7w74pWlM0SzbIsCvxEKPJa7byGFX9KIOGDYz5TUFoYnig574mtiCFY5NF3S73DpPstr8rmYejYCDpm5QvFgNZL8mRwlhHiykrzNQdB04t89/1O/w1cDnyilFU=");
+			    LineMessagingClient lineMessagingClient = builder.build();
 			    lineMessagingClient.replyMessage(replyMessage).join(); // 使用 .join() 方法等待異步操作完成
 			    System.out.println("replyMessage:" + replyMessage);
 			}
@@ -338,91 +348,94 @@ public class LineBot3Talk {
 	            FlexMessage flexMessage = createFlexMessage(name, address, rating, photoUrl);
 	            flexMessages.add(flexMessage);
 	        }
-	 }*/
-	 
-	 public static void handleNearLocationTemplate(String location) throws Exception {
-		 	String GOOGLE_MAPS_API_KEY = "AIzaSyBGQRnDgWX0c4WJbUNiBxU6MbOvDFPD_QA";
-		    String LINE_CHANNEL_ACCESS_TOKEN = "u2559vPjHa8bDO7hrn0C232jQHdcC2NG68Fo6bGl7VRxDc36eT7w74pWlM0SzbIsCvxEKPJa7byGFX9KIOGDYz5TUFoYnig574mtiCFY5NF3S73DpPstr8rmYejYCDpm5QvFgNZL8mRwlhHiykrzNQdB04t89/1O/w1cDnyilFU=";
-	        // 初始化Line Messaging Client
-	        LineMessagingClient lineMessagingClient = LineMessagingClient.builder(LINE_CHANNEL_ACCESS_TOKEN).build();
-
-	        // 建立Google Maps API客戶端
-	        GeoApiContext context = new GeoApiContext.Builder().apiKey(GOOGLE_MAPS_API_KEY).build();
-	        
-	        String[] latlng = location.split(",");
-	        // 查詢附近飲料店
-	        double latitude = Double.parseDouble(latlng[0]);  // 使用者的緯度
-	        double longitude = Double.parseDouble(latlng[1]);  // 使用者的經度
-	        int radius = 1000;  // 搜尋半徑（單位：公尺）
-	        String type = "飲料店";  // 查詢類型（例如：cafe, restaurant, bar等）
-
-	        NearbySearchRequest request = new NearbySearchRequest(context)
-	                .location(new LatLng(latitude, longitude))
-	                .radius(radius)
-	                .keyword(type);
-
-	        PlacesSearchResponse response = request.await();
-
-	        // 建立Flex Message列表
-	        List<FlexMessage> flexMessages = new ArrayList<>();
-
-	        // 取得搜尋結果的前5筆資料
-	        PlacesSearchResult[] results = response.results;
-	        int maxResults = 5;
-	        if (results.length < maxResults) {
-	            maxResults = results.length;
-	        }
-
-	        for (int i = 0; i < maxResults; i++) {
-	            PlacesSearchResult result = results[i];
-	            String name = result.name;
-	            String address = result.vicinity;
-	            double rating = result.rating;
-	            URI photoUrl = new URI("");  // 您可以從搜尋結果中取得照片URL
-
-	            // 建立訊息樣板
-	            FlexMessage flexMessage = createFlexMessage(name, address, rating, photoUrl);
-	            flexMessages.add(flexMessage);
-	        }
 	 }
+	 * @param event */
 	 
-	 
-	 public static FlexMessage createFlexMessage(String name, String address, double rating, URI photoUrl) {
-		    Bubble bubble = Bubble.builder()
-		            .body(Box.builder()
-		                    .layout(FlexLayout.VERTICAL)
-		                    .contents(Arrays.asList(
-		                            Text.builder()
-		                                    .text(name)
-		                                    .weight(Text.TextWeight.BOLD)
-		                                    .size(FlexFontSize.LG)
-		                                    .margin(FlexMarginSize.NONE)
-		                                    .build(),
-		                            Text.builder()
-		                                    .text("Address: " + address)
-		                                    .size(FlexFontSize.SM)
-		                                    .wrap(true)
-		                                    .margin(FlexMarginSize.MD)
-		                                    .build(),
-		                            Text.builder()
-		                                    .text("Rating: " + rating)
-		                                    .size(FlexFontSize.SM)
-		                                    .wrap(true)
-		                                    .margin(FlexMarginSize.MD)
-		                                    .build(),
-		                            Image.builder()
-		                                    .url(photoUrl)
-		                                    .size(Image.ImageSize.FULL_WIDTH)
-		                                    .aspectMode(Image.ImageAspectMode.Cover)
-		                                    .aspectRatio(Image.ImageAspectRatio.R1TO1)
-		                                    .margin(FlexMarginSize.MD)
-		                                    .build()
-		                    ))
-		                    .build())
-		            .build();
+	public static void handleNearLocationTemplate(MessageEvent<TextMessageContent> event, String location) throws Exception {
+	    String GOOGLE_MAPS_API_KEY = "AIzaSyBGQRnDgWX0c4WJbUNiBxU6MbOvDFPD_QA";
+	    String LINE_CHANNEL_ACCESS_TOKEN = "u2559vPjHa8bDO7hrn0C232jQHdcC2NG68Fo6bGl7VRxDc36eT7w74pWlM0SzbIsCvxEKPJa7byGFX9KIOGDYz5TUFoYnig574mtiCFY5NF3S73DpPstr8rmYejYCDpm5QvFgNZL8mRwlhHiykrzNQdB04t89/1O/w1cDnyilFU=";
 
-		    return new FlexMessage("Nearby Drink Shops", bubble);
-		}
+	    // 初始化Line Messaging Client
+	    LineMessagingClientBuilder builder = LineMessagingClient.builder(LINE_CHANNEL_ACCESS_TOKEN);
+	    LineMessagingClient lineMessagingClient = builder.build();
+
+	    // 建立Google Maps API客户端
+	    GeoApiContext context = new GeoApiContext.Builder().apiKey(GOOGLE_MAPS_API_KEY).build();
+
+	    String[] latlng = location.split(",");
+	    // 查询附近饮料店
+	    double latitude = Double.parseDouble(latlng[0]);  // 使用者的纬度
+	    double longitude = Double.parseDouble(latlng[1]);  // 使用者的经度
+	    int radius = 1000;  // 搜索半径（单位：米）
+	    String type = "飲料店";  // 查询关键字
+
+	    NearbySearchRequest request = PlacesApi.nearbySearchQuery(context, new LatLng(latitude, longitude))
+	            .radius(radius)
+	            .keyword(type);
+
+	    PlacesSearchResponse response = request.await();
+
+	    // 建立Flex Message列表
+	    List<PlacesSearchResult> results = Arrays.asList(response.results);
+	    int maxResults = Math.min(results.size(), 5);
+	    List<Bubble> flexBubbles = new ArrayList<>();
+
+	    for (int i = 0; i < maxResults; i++) {
+	        PlacesSearchResult result = results.get(i);
+	        String name = result.name;
+	        String address = result.vicinity;
+	        double rating = result.rating;
+	        URI photoUrl = new URI("");  // 您可以从搜索结果中获取照片URL
+
+	        // 建立消息模板
+	        Bubble bubble = Bubble.builder()
+	                .body(Box.builder()
+	                        .layout(FlexLayout.VERTICAL)
+	                        .contents(Arrays.asList(
+	                                Text.builder()
+	                                        .text(name)
+	                                        .weight(Text.TextWeight.BOLD)
+	                                        .size(FlexFontSize.LG)
+	                                        .margin(FlexMarginSize.NONE)
+	                                        .build(),
+	                                Text.builder()
+	                                        .text("Address: " + address)
+	                                        .size(FlexFontSize.SM)
+	                                        .wrap(true)
+	                                        .margin(FlexMarginSize.MD)
+	                                        .build(),
+	                                Text.builder()
+	                                        .text("Rating: " + rating)
+	                                        .size(FlexFontSize.SM)
+	                                        .wrap(true)
+	                                        .margin(FlexMarginSize.MD)
+	                                        .build(),
+	                                Image.builder()
+	                                        .url(photoUrl)
+	                                        .size(Image.ImageSize.FULL_WIDTH)
+	                                        .aspectMode(Image.ImageAspectMode.Cover)
+	                                        .aspectRatio(Image.ImageAspectRatio.R1TO1)
+	                                        .margin(FlexMarginSize.MD)
+	                                        .build()
+	                        ))
+	                        .build())
+	                .build();
+
+	        flexBubbles.add(bubble);
+	    }
+
+	    // 创建 Flex Message
+	    FlexMessage flexMessage = FlexMessage.builder()
+	            .altText("Nearby Drink Shops")
+	            .contents(Carousel.builder().contents(flexBubbles).build())
+	            .build();
+
+	    // 创建 PushMessage 并发送消息给 Line Bot
+	    String userId = event.getSource().getUserId();
+	    PushMessage pushMessage = new PushMessage(userId, flexMessage);
+	    lineMessagingClient.pushMessage(pushMessage).join();
+	}
+
 
 //  public static void main(String[] args) {
 //	  String place = "內湖路一段258巷69弄42號";

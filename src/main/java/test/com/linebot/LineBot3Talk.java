@@ -35,6 +35,7 @@ import com.linecorp.bot.client.LineMessagingClient;
 import com.linecorp.bot.client.LineMessagingClientBuilder;
 import com.linecorp.bot.model.PushMessage;
 import com.linecorp.bot.model.ReplyMessage;
+import com.linecorp.bot.model.action.Action;
 import com.linecorp.bot.model.action.URIAction;
 import com.linecorp.bot.model.event.Event;
 import com.linecorp.bot.model.event.MessageEvent;
@@ -72,7 +73,7 @@ import lombok.extern.slf4j.Slf4j;
 public class LineBot3Talk {
 	private static final Logger logger = LoggerFactory.getLogger(LineBot3Talk.class);
 	@Autowired
-    private LineMessagingClient lineMessagingClient;
+    private static LineMessagingClient lineMessagingClient;
 
 	@EventMapping
 	public void handle(MessageEvent<TextMessageContent> event) {
@@ -125,9 +126,6 @@ public class LineBot3Talk {
 		Message replyMessage = new LocationMessage("location", "基隆市中山區中和路168巷7弄54號", 25.06752, 121.585664);
 		reply(replyMessage, event.getReplyToken());
 	}
-
-	
-
 	
 	// 回覆多筆座標
 	public void handleNearLocationMessageEvent(MessageEvent<TextMessageContent> event, String nearbyPlaces) {
@@ -338,9 +336,9 @@ public class LineBot3Talk {
 	        PlacesSearchResult result = results.get(i);
 	        String name = result.name;
 	        String address = result.vicinity;
-	        double rating = result.rating;
-//	        URI photoUrl = new URI("https://media.nownews.com/nn_media/thumbnail/2019/10/1570089924-27a9b9c9d7facd3422fe4610dd8ebe42-696x386.png");
-	        URI photoUrl = new URI("https://www.google.com/url?sa=i&url=https%3A%2F%2F616pic.com%2Fsucai%2F158ixylqe.html&psig=AOvVaw3EMRQYsFtlrSle5m0atLcm&ust=1686577418981000&source=images&cd=vfe&ved=0CBEQjRxqFwoTCLC5ttGsu_8CFQAAAAAdAAAAABAa");
+	        double resultLatitude = result.geometry.location.lat;
+	        double resultLongitude = result.geometry.location.lng;
+	        URI photoUrl = new URI("https://media.nownews.com/nn_media/thumbnail/2019/10/1570089924-27a9b9c9d7facd3422fe4610dd8ebe42-696x386.png");
 	        // 建立消息模板
 	        Bubble bubble = Bubble.builder()
 	                .body(Box.builder()
@@ -359,7 +357,7 @@ public class LineBot3Talk {
 	                                        .margin(FlexMarginSize.MD)
 	                                        .build(),
 	                                Text.builder()
-	                                        .text("Rating: " + rating)
+	                                        .text("(" + resultLatitude+","+resultLongitude+")")
 	                                        .size(FlexFontSize.SM)
 	                                        .wrap(true)
 	                                        .margin(FlexMarginSize.MD)
@@ -370,6 +368,7 @@ public class LineBot3Talk {
 	                                        .aspectMode(Image.ImageAspectMode.Cover)
 	                                        .aspectRatio(Image.ImageAspectRatio.R1TO1)
 	                                        .margin(FlexMarginSize.MD)
+	                                        .action(handleLocatio(event,resultLatitude,resultLongitude))
 	                                        .build()
 	                        ))
 	                        .build())
@@ -390,6 +389,15 @@ public class LineBot3Talk {
 	    lineMessagingClient.pushMessage(pushMessage).join();
 	}
 
+	//
+	public static Action handleLocatio(MessageEvent<TextMessageContent> event,Double lat, Double lng) {
+		String replyToken=event.getReplyToken();
+		logger.info("SUCCESS:單筆座標");
+		Message replyMessage = new LocationMessage("location", "基隆市中山區中和路168巷7弄54號", lat, lng);
+		ReplyMessage reply = new ReplyMessage(replyToken, replyMessage);
+		lineMessagingClient.replyMessage(reply);
+		return null;
+	}
 
 //  public static void main(String[] args) {
 //	  String place = "內湖路一段258巷69弄42號";

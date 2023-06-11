@@ -147,7 +147,7 @@ public class LineBot3Talk {
                 System.out.println("緯度: " + location.lat);
                 System.out.println("經度: " + location.lng);
                 
-                return location.lat+"X"+location.lng;
+                return location.lat+","+location.lng;
             }
         } catch (Exception e) {
             e.printStackTrace();

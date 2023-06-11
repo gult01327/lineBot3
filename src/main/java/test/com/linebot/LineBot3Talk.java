@@ -100,8 +100,6 @@ public class LineBot3Talk {
 	// 回覆多筆座標
 	public void handleNearLocationMessageEvent(MessageEvent<TextMessageContent> event, String nearbyPlaces) {
 		String replyToken = event.getReplyToken();
-		LineMessagingClient client = LineMessagingClient.builder(replyToken).build();
-
 		logger.info("準備回傳多筆座標");
 		if (nearbyPlaces.length() > 1) {
 			// 將資料拆分並寫入messages
@@ -126,17 +124,19 @@ public class LineBot3Talk {
 			while (remainingMessages > 0) {
 				int endIndex = Math.min(startIndex + maxMessagesPerRequest, messageCount);
 				List<Message> subMessages = messages.subList(startIndex, endIndex);
-				ReplyMessage replyMessage = new ReplyMessage(event.getReplyToken(), subMessages);
-				client.replyMessage(replyMessage);
-
+				System.out.println("subMessages數量:" + subMessages.size());
+				ReplyMessage reply = new ReplyMessage(replyToken, subMessages);
+				//回傳多筆訊息
+				lineMessagingClient.replyMessage(reply);
+				System.out.println("成功回傳多筆訊息");
 				remainingMessages -= maxMessagesPerRequest;
 				startIndex += maxMessagesPerRequest;
+				System.out.println("剩餘訊息數量："+remainingMessages);
 			}
 		} else {
 			TextMessage replyMessage = new TextMessage("查無附近飲料店");
 			reply(replyMessage, event.getReplyToken());
 		}
-
 	}
 
 	public void handleTextMessageEvent(MessageEvent<TextMessageContent> event) {
@@ -277,12 +277,50 @@ public class LineBot3Talk {
 	  String place = "基隆市中山區中和路168巷7弄54號";
 	  String location = getGoogleMapLocation(place);
 	  System.out.println("當前位置: " + location);
-
-	  String nearbyPlaces = getNearbyPlaces(location, "飲料店");
-	  System.out.println("附近的飲料店: " + nearbyPlaces);
-	  mainNearLocationMessageEvent(nearbyPlaces);
+	  
+      if(!location.equals("X")) {
+	        //附近飲料店
+	        String nearbyPlaces = getNearbyPlaces(location, "飲料店");
+	        System.out.println("附近的飲料店: " + nearbyPlaces);
+	        //傳送多筆座標
+	        handleNearLocationMessageEventmain(nearbyPlaces);
+      }
   
   	}
+  
+	// 回覆多筆座標
+	public static void handleNearLocationMessageEventmain(String nearbyPlaces) {
+
+		logger.info("準備回傳多筆座標");
+		if (nearbyPlaces.length() > 1) {
+			// 將資料拆分並寫入messages
+			List<Message> messages = new ArrayList<>();
+			String[] token = nearbyPlaces.split(";");
+			for (int i = 0; i < token.length; i++) {
+				String[] object = token[i].split(",");
+				String name = (object[0]);
+				double lat = (Double.parseDouble(object[1]));
+				double lng = (Double.parseDouble(object[2]));
+				Message replyMessage = new LocationMessage("location", name, lat, lng);
+				messages.add(replyMessage);
+				System.out.println("飲料店:" + name + ",緯度:" + lat + ",經度:" + lng);
+			}
+
+			// 發送回覆訊息
+			int messageCount = messages.size();
+			int maxMessagesPerRequest = 5;
+			int remainingMessages = messageCount;
+			int startIndex = 0;
+			
+			while (remainingMessages > 0) {
+				int endIndex = Math.min(startIndex + maxMessagesPerRequest, messageCount);
+				List<Message> subMessages = messages.subList(startIndex, endIndex);
+
+				remainingMessages -= maxMessagesPerRequest;
+				startIndex += maxMessagesPerRequest;
+			}
+		}
+	}
 
     //取得附近飲料店：店名（緯度，經度）
     private static String getNearbyPlaces(String location, String keyword) {

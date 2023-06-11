@@ -114,25 +114,17 @@ public class LineBot3Talk {
 				messages.add(replyMessage);
 				System.out.println("飲料店:" + name + ",緯度:" + lat + ",經度:" + lng);
 			}
-
-			// 發送回覆訊息
-			int messageCount = messages.size();
+			// 分批發送消息
 			int maxMessagesPerRequest = 5;
-			int remainingMessages = messageCount;
-			int startIndex = 0;
-			
-			while (remainingMessages > 0) {
-				int endIndex = Math.min(startIndex + maxMessagesPerRequest, messageCount);
-				List<Message> subMessages = messages.subList(startIndex, endIndex);
-				System.out.println("subMessages數量:" + subMessages.size());
-				ReplyMessage reply = new ReplyMessage(replyToken, subMessages);
-				//回傳多筆訊息
-				lineMessagingClient.replyMessage(reply);
-				System.out.println("成功回傳多筆訊息");
-				remainingMessages -= maxMessagesPerRequest;
-				startIndex += maxMessagesPerRequest;
-				System.out.println("剩餘訊息數量："+remainingMessages);
+			int messageCount = messages.size();
+
+			for (int i = 0; i < messageCount; i += maxMessagesPerRequest) {
+			    int endIndex = Math.min(i + maxMessagesPerRequest, messageCount);
+			    List<Message> subMessages = messages.subList(i, endIndex);
+			    ReplyMessage replyMessage = new ReplyMessage(replyToken, subMessages);
+			    lineMessagingClient.replyMessage(replyMessage);
 			}
+			
 		} else {
 			TextMessage replyMessage = new TextMessage("查無附近飲料店");
 			reply(replyMessage, event.getReplyToken());

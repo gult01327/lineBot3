@@ -36,6 +36,7 @@ import com.linecorp.bot.client.LineMessagingClientBuilder;
 import com.linecorp.bot.model.PushMessage;
 import com.linecorp.bot.model.ReplyMessage;
 import com.linecorp.bot.model.action.Action;
+import com.linecorp.bot.model.action.LocationAction;
 import com.linecorp.bot.model.action.URIAction;
 import com.linecorp.bot.model.event.Event;
 import com.linecorp.bot.model.event.MessageEvent;
@@ -339,6 +340,11 @@ public class LineBot3Talk {
 	        double resultLatitude = result.geometry.location.lat;
 	        double resultLongitude = result.geometry.location.lng;
 	        URI photoUrl = new URI("https://media.nownews.com/nn_media/thumbnail/2019/10/1570089924-27a9b9c9d7facd3422fe4610dd8ebe42-696x386.png");
+	        
+	        Action action = new URIAction(
+	                "Send Location",
+	                URI.create("line://nv/location?lat=" + resultLatitude + "&lng=" + resultLongitude), null
+	        );
 	        // 建立消息模板
 	        Bubble bubble = Bubble.builder()
 	                .body(Box.builder()
@@ -368,10 +374,10 @@ public class LineBot3Talk {
 	                                        .aspectMode(Image.ImageAspectMode.Cover)
 	                                        .aspectRatio(Image.ImageAspectRatio.R1TO1)
 	                                        .margin(FlexMarginSize.MD)
+	                                        .action(action)  // 设置点击操作
 	                                        .build()
 	                        ))
 	                        .build())
-	                .action(handleLocatio(event,resultLatitude,resultLongitude))
 	                .build();
 
 	        flexBubbles.add(bubble);
@@ -387,16 +393,6 @@ public class LineBot3Talk {
 	    String userId = event.getSource().getUserId();
 	    PushMessage pushMessage = new PushMessage(userId, flexMessage);
 	    lineMessagingClient.pushMessage(pushMessage).join();
-	}
-
-	//
-	public static Action handleLocatio(MessageEvent<TextMessageContent> event,Double lat, Double lng) {
-		String replyToken=event.getReplyToken();
-		logger.info("SUCCESS:單筆座標");
-		Message replyMessage = new LocationMessage("location", "基隆市中山區中和路168巷7弄54號", lat, lng);
-		ReplyMessage reply = new ReplyMessage(replyToken, replyMessage);
-		lineMessagingClient.replyMessage(reply);
-		return null;
 	}
 
 //  public static void main(String[] args) {

@@ -7,6 +7,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,7 +101,7 @@ public class LineBot3Talk {
 	public void handleNearLocationMessageEvent(MessageEvent<TextMessageContent> event,String nearbyPlaces) {
 		logger.info("SUCCESS:多筆座標");
 		if(nearbyPlaces.length()>1) {
-			// 收到文字訊息做回覆
+			List<Message> messages = new ArrayList<>();
 			String[] token = nearbyPlaces.split(";");
 			for(int i = 0;i<token.length;i++) {
 				String[] object =token[i].split(",");
@@ -107,8 +109,10 @@ public class LineBot3Talk {
 				double lat=(Double.parseDouble(object[1]));
 				double lng=(Double.parseDouble(object[2]));
 				Message replyMessage = new LocationMessage("location",name,lat,lng);
-				reply(replyMessage, event.getReplyToken());
+				messages.add(replyMessage);
+				System.out.println("飲料店:" + name+",緯度:"+lat+",經度:"+lng);
 			}
+			replyList(messages, event.getReplyToken());
 		}else {
 			TextMessage replyMessage = new TextMessage("查無附近飲料店");
     		reply(replyMessage, event.getReplyToken());
@@ -133,10 +137,17 @@ public class LineBot3Talk {
 	}
 	
 	
-
+	//回傳單筆訊息
 	private void reply(Message replyMessage, String replyToken) {
 //		LineMessagingClient lineMessagingClient = LineMessagingClient.builder(replyToken).build();
 		ReplyMessage reply = new ReplyMessage(replyToken, replyMessage);
+		lineMessagingClient.replyMessage(reply);
+	}
+	
+	//回傳多筆訊息
+	private void replyList(List<Message> messages, String replyToken) {
+//		LineMessagingClient lineMessagingClient = LineMessagingClient.builder(replyToken).build();
+		ReplyMessage reply = new ReplyMessage(replyToken, messages);
 		lineMessagingClient.replyMessage(reply);
 	}
 	

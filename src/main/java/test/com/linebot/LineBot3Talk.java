@@ -1,5 +1,6 @@
 package test.com.linebot;
 
+import java.awt.TextComponent;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -8,6 +9,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -22,21 +24,39 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.maps.GeoApiContext;
 import com.google.maps.GeocodingApi;
+import com.google.maps.NearbySearchRequest;
 import com.google.maps.model.GeocodingResult;
 import com.google.maps.model.LatLng;
+import com.google.maps.model.PlaceType;
+import com.google.maps.model.PlacesSearchResponse;
+import com.google.maps.model.PlacesSearchResult;
 import com.linecorp.bot.client.LineMessagingClient;
 import com.linecorp.bot.client.LineMessagingClientBuilder;
 import com.linecorp.bot.model.ReplyMessage;
+import com.linecorp.bot.model.action.URIAction;
 import com.linecorp.bot.model.event.Event;
 import com.linecorp.bot.model.event.MessageEvent;
 import com.linecorp.bot.model.event.message.LocationMessageContent;
 import com.linecorp.bot.model.event.message.StickerMessageContent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
+import com.linecorp.bot.model.message.FlexMessage;
 import com.linecorp.bot.model.message.ImageMessage;
 import com.linecorp.bot.model.message.LocationMessage;
 import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.StickerMessage;
+import com.linecorp.bot.model.message.TemplateMessage;
 import com.linecorp.bot.model.message.TextMessage;
+import com.linecorp.bot.model.message.flex.component.Box;
+import com.linecorp.bot.model.message.flex.component.Image;
+import com.linecorp.bot.model.message.flex.component.Text;
+import com.linecorp.bot.model.message.flex.component.Text.TextWeight;
+import com.linecorp.bot.model.message.flex.container.Bubble;
+import com.linecorp.bot.model.message.flex.container.FlexContainer;
+import com.linecorp.bot.model.message.flex.unit.FlexFontSize;
+import com.linecorp.bot.model.message.flex.unit.FlexLayout;
+import com.linecorp.bot.model.message.flex.unit.FlexMarginSize;
+import com.linecorp.bot.model.message.template.ButtonsTemplate;
+import com.linecorp.bot.model.message.template.Template;
 import com.linecorp.bot.spring.boot.annotation.EventMapping;
 import com.linecorp.bot.spring.boot.annotation.LineMessageHandler;
 
@@ -68,7 +88,13 @@ public class LineBot3Talk {
 			//地址查詢：以？開頭並輸入地址
 			String place = originalMessageText.substring(1);
 	        System.out.println("輸入地址:" + place);
-	        
+	        try {
+				handleNearLocationTemplate(place);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	        /**
 	        //取得地址緯度、經度
 	        String location = getGoogleMapLocation(place);
 	        System.out.println("取得地址緯度、經度:" + location);
@@ -82,7 +108,7 @@ public class LineBot3Talk {
 	        }else {
 	        	TextMessage replyMessage = new TextMessage("取得地址失敗");
 	    		reply(replyMessage, event.getReplyToken());
-	        }
+	        }*/
 		}else{
 			logger.info("笑死");
 			handleTextMessageEvent(event);
@@ -96,6 +122,9 @@ public class LineBot3Talk {
 		Message replyMessage = new LocationMessage("location", "基隆市中山區中和路168巷7弄54號", 25.06752, 121.585664);
 		reply(replyMessage, event.getReplyToken());
 	}
+
+	
+
 	
 	// 回覆多筆座標
 	public void handleNearLocationMessageEvent(MessageEvent<TextMessageContent> event, String nearbyPlaces) {
@@ -266,21 +295,150 @@ public class LineBot3Talk {
         return "無法獲取當前位置信息。";
     }
     */
-    
-  public static void main(String[] args) {
-	  String place = "內湖路一段258巷69弄42號";
-	  String location = getGoogleMapLocation(place);
-	  System.out.println("當前位置: " + location);
-	  
-      if(!location.equals("X")) {
-	        //附近飲料店
-	        String nearbyPlaces = getNearbyPlaces(location, "飲料店");
-	        System.out.println("附近的飲料店: " + nearbyPlaces);
-	        //傳送多筆座標
-	        handleNearLocationMessageEventmain(nearbyPlaces);
-      }
-  
-  	}
+	/**
+	 public static void main(String[] args) throws Exception {
+		 	String GOOGLE_MAPS_API_KEY = "AIzaSyBGQRnDgWX0c4WJbUNiBxU6MbOvDFPD_QA";
+		    String LINE_CHANNEL_ACCESS_TOKEN = "u2559vPjHa8bDO7hrn0C232jQHdcC2NG68Fo6bGl7VRxDc36eT7w74pWlM0SzbIsCvxEKPJa7byGFX9KIOGDYz5TUFoYnig574mtiCFY5NF3S73DpPstr8rmYejYCDpm5QvFgNZL8mRwlhHiykrzNQdB04t89/1O/w1cDnyilFU=";
+	        // 初始化Line Messaging Client
+	        LineMessagingClient lineMessagingClient = LineMessagingClient.builder(LINE_CHANNEL_ACCESS_TOKEN).build();
+
+	        // 建立Google Maps API客戶端
+	        GeoApiContext context = new GeoApiContext.Builder().apiKey(GOOGLE_MAPS_API_KEY).build();
+
+	        // 查詢附近飲料店
+	        double latitude = 25.06752;  // 使用者的緯度
+	        double longitude = 121.585664;  // 使用者的經度
+	        int radius = 1000;  // 搜尋半徑（單位：公尺）
+	        String type = "飲料店";  // 查詢類型（例如：cafe, restaurant, bar等）
+
+	        NearbySearchRequest request = new NearbySearchRequest(context)
+	                .location(new LatLng(latitude, longitude))
+	                .radius(radius)
+	                .keyword(type);
+
+	        PlacesSearchResponse response = request.await();
+
+	        // 建立Flex Message列表
+	        List<FlexMessage> flexMessages = new ArrayList<>();
+
+	        // 取得搜尋結果的前5筆資料
+	        PlacesSearchResult[] results = response.results;
+	        int maxResults = 5;
+	        if (results.length < maxResults) {
+	            maxResults = results.length;
+	        }
+
+	        for (int i = 0; i < maxResults; i++) {
+	            PlacesSearchResult result = results[i];
+	            String name = result.name;
+	            String address = result.vicinity;
+	            double rating = result.rating;
+	            URI photoUrl = new URI("");  // 您可以從搜尋結果中取得照片URL
+
+	            // 建立訊息樣板
+	            FlexMessage flexMessage = createFlexMessage(name, address, rating, photoUrl);
+	            flexMessages.add(flexMessage);
+	        }
+	 }*/
+	 
+	 public static void handleNearLocationTemplate(String place) throws Exception {
+		 	String GOOGLE_MAPS_API_KEY = "AIzaSyBGQRnDgWX0c4WJbUNiBxU6MbOvDFPD_QA";
+		    String LINE_CHANNEL_ACCESS_TOKEN = "u2559vPjHa8bDO7hrn0C232jQHdcC2NG68Fo6bGl7VRxDc36eT7w74pWlM0SzbIsCvxEKPJa7byGFX9KIOGDYz5TUFoYnig574mtiCFY5NF3S73DpPstr8rmYejYCDpm5QvFgNZL8mRwlhHiykrzNQdB04t89/1O/w1cDnyilFU=";
+	        // 初始化Line Messaging Client
+	        LineMessagingClient lineMessagingClient = LineMessagingClient.builder(LINE_CHANNEL_ACCESS_TOKEN).build();
+
+	        // 建立Google Maps API客戶端
+	        GeoApiContext context = new GeoApiContext.Builder().apiKey(GOOGLE_MAPS_API_KEY).build();
+	        
+	        String[] latlng = place.split(";");
+
+	        // 查詢附近飲料店
+	        double latitude = Double.parseDouble(latlng[0]);  // 使用者的緯度
+	        double longitude = Double.parseDouble(latlng[1]);  // 使用者的經度
+	        int radius = 1000;  // 搜尋半徑（單位：公尺）
+	        String type = "飲料店";  // 查詢類型（例如：cafe, restaurant, bar等）
+
+	        NearbySearchRequest request = new NearbySearchRequest(context)
+	                .location(new LatLng(latitude, longitude))
+	                .radius(radius)
+	                .keyword(type);
+
+	        PlacesSearchResponse response = request.await();
+
+	        // 建立Flex Message列表
+	        List<FlexMessage> flexMessages = new ArrayList<>();
+
+	        // 取得搜尋結果的前5筆資料
+	        PlacesSearchResult[] results = response.results;
+	        int maxResults = 5;
+	        if (results.length < maxResults) {
+	            maxResults = results.length;
+	        }
+
+	        for (int i = 0; i < maxResults; i++) {
+	            PlacesSearchResult result = results[i];
+	            String name = result.name;
+	            String address = result.vicinity;
+	            double rating = result.rating;
+	            URI photoUrl = new URI("");  // 您可以從搜尋結果中取得照片URL
+
+	            // 建立訊息樣板
+	            FlexMessage flexMessage = createFlexMessage(name, address, rating, photoUrl);
+	            flexMessages.add(flexMessage);
+	        }
+	 }
+	 
+	 
+	 public static FlexMessage createFlexMessage(String name, String address, double rating, URI photoUrl) {
+		    Bubble bubble = Bubble.builder()
+		            .body(Box.builder()
+		                    .layout(FlexLayout.VERTICAL)
+		                    .contents(Arrays.asList(
+		                            Text.builder()
+		                                    .text(name)
+		                                    .weight(Text.TextWeight.BOLD)
+		                                    .size(FlexFontSize.LG)
+		                                    .margin(FlexMarginSize.NONE)
+		                                    .build(),
+		                            Text.builder()
+		                                    .text("Address: " + address)
+		                                    .size(FlexFontSize.SM)
+		                                    .wrap(true)
+		                                    .margin(FlexMarginSize.MD)
+		                                    .build(),
+		                            Text.builder()
+		                                    .text("Rating: " + rating)
+		                                    .size(FlexFontSize.SM)
+		                                    .wrap(true)
+		                                    .margin(FlexMarginSize.MD)
+		                                    .build(),
+		                            Image.builder()
+		                                    .url(photoUrl)
+		                                    .size(Image.ImageSize.FULL_WIDTH)
+		                                    .aspectMode(Image.ImageAspectMode.Cover)
+		                                    .aspectRatio(Image.ImageAspectRatio.R1TO1)
+		                                    .margin(FlexMarginSize.MD)
+		                                    .build()
+		                    ))
+		                    .build())
+		            .build();
+
+		    return new FlexMessage("Nearby Drink Shops", bubble);
+		}
+
+//  public static void main(String[] args) {
+//	  String place = "內湖路一段258巷69弄42號";
+//	  String location = getGoogleMapLocation(place);
+//	  System.out.println("當前位置: " + location);
+//	  
+//      if(!location.equals("X")) {
+//	        //附近飲料店
+//	        String nearbyPlaces = getNearbyPlaces(location, "飲料店");
+//	        System.out.println("附近的飲料店: " + nearbyPlaces);
+//	        //傳送多筆座標
+//	        handleNearLocationMessageEventmain(nearbyPlaces);
+//      }
+//  	}
   
 	// 回覆多筆座標
 	public static void handleNearLocationMessageEventmain(String nearbyPlaces) {

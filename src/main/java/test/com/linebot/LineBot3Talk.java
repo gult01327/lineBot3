@@ -385,7 +385,7 @@ public class LineBot3Talk {
 	        String name = result.name;
 	        String address = result.vicinity;
 	        double rating = result.rating;
-	        URI photoUrl = new URI("");  // 您可以从搜索结果中获取照片URL
+	        URI photoUrl = new URI("https://media.nownews.com/nn_media/thumbnail/2019/10/1570089924-27a9b9c9d7facd3422fe4610dd8ebe42-696x386.png");  // 您可以从搜索结果中获取照片URL
 
 	        // 建立消息模板
 	        Bubble bubble = Bubble.builder()

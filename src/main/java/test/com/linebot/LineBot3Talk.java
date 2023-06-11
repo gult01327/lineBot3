@@ -121,6 +121,7 @@ public class LineBot3Talk {
 			for (int i = 0; i < messageCount; i += maxMessagesPerRequest) {
 			    int endIndex = Math.min(i + maxMessagesPerRequest, messageCount);
 			    List<Message> subMessages = messages.subList(i, endIndex);
+			    System.out.println("發送消息---i:" + i + ",endIndex:" + endIndex );
 			    ReplyMessage replyMessage = new ReplyMessage(replyToken, subMessages);
 			    lineMessagingClient.replyMessage(replyMessage);
 			}
@@ -266,7 +267,7 @@ public class LineBot3Talk {
     */
     
   public static void main(String[] args) {
-	  String place = "基隆市中山區中和路168巷7弄54號";
+	  String place = "內湖路一段258巷69弄42號";
 	  String location = getGoogleMapLocation(place);
 	  System.out.println("當前位置: " + location);
 	  
@@ -298,18 +299,14 @@ public class LineBot3Talk {
 				System.out.println("飲料店:" + name + ",緯度:" + lat + ",經度:" + lng);
 			}
 
-			// 發送回覆訊息
-			int messageCount = messages.size();
+			// 分批發送消息
 			int maxMessagesPerRequest = 5;
-			int remainingMessages = messageCount;
-			int startIndex = 0;
-			
-			while (remainingMessages > 0) {
-				int endIndex = Math.min(startIndex + maxMessagesPerRequest, messageCount);
-				List<Message> subMessages = messages.subList(startIndex, endIndex);
+			int messageCount = messages.size();
 
-				remainingMessages -= maxMessagesPerRequest;
-				startIndex += maxMessagesPerRequest;
+			for (int i = 0; i < messageCount; i += maxMessagesPerRequest) {
+			    int endIndex = Math.min(i + maxMessagesPerRequest, messageCount);
+			    List<Message> subMessages = messages.subList(i, endIndex);
+			    System.out.println("i:" + i + ",endIndex:" + endIndex );
 			}
 		}
 	}

@@ -62,7 +62,7 @@ public class LineBot3Talk {
 			} catch (URISyntaxException e) {
 				logger.info("我瘋子失敗");
 			}
-		}else if(originalMessageText.substring(0).equals("?")&& originalMessageText.length()>1){
+		}else if(originalMessageText.substring(0,1).equals("?")&& originalMessageText.length()>1){
 			//地址查詢：以？開頭並輸入地址
 			String place = originalMessageText.substring(1);
 	        System.out.println("輸入地址:" + place);

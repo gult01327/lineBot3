@@ -98,16 +98,22 @@ public class LineBot3Talk {
 	//回覆多筆座標
 	public void handleNearLocationMessageEvent(MessageEvent<TextMessageContent> event,String nearbyPlaces) {
 		logger.info("SUCCESS:多筆座標");
-		// 收到文字訊息做回覆
-		String[] token = nearbyPlaces.split(";");
-		for(int i = 0;i<token.length;i++) {
-			String[] object =token[i].split(",");
-			String name=(object[0]);
-			double lat=(Double.parseDouble(object[1]));
-			double lng=(Double.parseDouble(object[2]));
-			Message replyMessage = new LocationMessage("location",name,lat,lng);
-			reply(replyMessage, event.getReplyToken());
+		if(nearbyPlaces.length()>1) {
+			// 收到文字訊息做回覆
+			String[] token = nearbyPlaces.split(";");
+			for(int i = 0;i<token.length;i++) {
+				String[] object =token[i].split(",");
+				String name=(object[0]);
+				double lat=(Double.parseDouble(object[1]));
+				double lng=(Double.parseDouble(object[2]));
+				Message replyMessage = new LocationMessage("location",name,lat,lng);
+				reply(replyMessage, event.getReplyToken());
+			}
+		}else {
+			TextMessage replyMessage = new TextMessage("查無附近飲料店");
+    		reply(replyMessage, event.getReplyToken());
 		}
+
 	}
 
 	public void handleTextMessageEvent(MessageEvent<TextMessageContent> event) {
@@ -135,7 +141,7 @@ public class LineBot3Talk {
 	}
 	
 	//獲取輸入地址的經緯度
-    private String getGoogleMapLocation(String address) {
+    private static String getGoogleMapLocation(String address) {
     	//google map金鑰
     	String  GOOGLE_API_KEY = "AIzaSyBGQRnDgWX0c4WJbUNiBxU6MbOvDFPD_QA";
         GeoApiContext context = new GeoApiContext.Builder().apiKey(GOOGLE_API_KEY).build();
@@ -174,16 +180,6 @@ public class LineBot3Talk {
 		// 就是加入聊天室, 離開聊天室, 還有一些有的沒的事件
 		logger.info("event: " + event);
 	}
-    
-//    public static void main(String[] args) {
-//        String location = getCurrentLocation();
-//        System.out.println("當前位置: " + location);
-//
-//        String nearbyPlaces = getNearbyPlaces(location, "飲料店");
-//        System.out.println("附近的飲料店: " + nearbyPlaces);
-//        mainNearLocationMessageEvent(nearbyPlaces);
-//        
-//    }
     
 	//回覆多筆座標
 	public static void mainNearLocationMessageEvent(String nearbyPlaces) {
@@ -247,6 +243,17 @@ public class LineBot3Talk {
     }
     */
     
+  public static void main(String[] args) {
+	  String place = "基隆市中山區中和路168巷7弄54號";
+	  String location = getGoogleMapLocation(place);
+	  System.out.println("當前位置: " + location);
+
+	  String nearbyPlaces = getNearbyPlaces(location, "飲料店");
+	  System.out.println("附近的飲料店: " + nearbyPlaces);
+	  mainNearLocationMessageEvent(nearbyPlaces);
+  
+  	}
+
     //取得附近飲料店：店名（緯度，經度）
     private static String getNearbyPlaces(String location, String keyword) {
         try {
@@ -254,7 +261,7 @@ public class LineBot3Talk {
             String encodedKeyword = URLEncoder.encode(keyword, "UTF-8");
 
             // 使用Places API获取附近的饮料店信息
-            URL placesApiUrl = new URL("https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + encodedLocation + "&radius=500&keyword=" + encodedKeyword + "&key=" + "AIzaSyBGQRnDgWX0c4WJbUNiBxU6MbOvDFPD_QA");
+            URL placesApiUrl = new URL("https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + encodedLocation + "&radius=1000&keyword=" + encodedKeyword + "&key=" + "AIzaSyBGQRnDgWX0c4WJbUNiBxU6MbOvDFPD_QA");
             HttpURLConnection placesConnection = (HttpURLConnection) placesApiUrl.openConnection();
             placesConnection.setRequestMethod("GET");
 

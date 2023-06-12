@@ -37,6 +37,7 @@ import com.linecorp.bot.model.PushMessage;
 import com.linecorp.bot.model.ReplyMessage;
 import com.linecorp.bot.model.action.Action;
 import com.linecorp.bot.model.action.LocationAction;
+import com.linecorp.bot.model.action.MessageAction;
 import com.linecorp.bot.model.action.URIAction;
 import com.linecorp.bot.model.event.Event;
 import com.linecorp.bot.model.event.MessageEvent;
@@ -319,13 +320,14 @@ public class LineBot3Talk {
 	        double resultLatitude = result.geometry.location.lat;
 	        double resultLongitude = result.geometry.location.lng;
 	        URI photoUrl = new URI("https://media.nownews.com/nn_media/thumbnail/2019/10/1570089924-27a9b9c9d7facd3422fe4610dd8ebe42-696x386.png");
-	        
+	        //點擊圖片觸發的action
+	        String mapUrl = "https://maps.google.com/maps?q=" + resultLatitude + "," + resultLongitude;
 	        Action action = new URIAction(
-	                "Send Location",
-	                new URI("line://nv/location?lat=" +25.081725+ "&lng=" + 121.5708303),
+	                "Open Map",
+	                new URI(mapUrl),
 	                null
 	        );
-	        System.out.println("URIAction : lat" + resultLatitude + ",lng:" + resultLongitude );
+
 	        // 建立訊息模板
 	        Bubble bubble = Bubble.builder()
 	                .body(Box.builder()

@@ -97,23 +97,19 @@ public class LineBot3Talk {
 	        //取得地址緯度、經度
 	        String location = getGoogleMapLocation(place);
 	        System.out.println("取得地址緯度、經度:" + location);
-	        try {
-				handleNearLocationTemplate(event,location);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-	        /**
 	        if(!location.equals("X")) {
-		        //附近飲料店
-		        String nearbyPlaces = getNearbyPlaces(location, "飲料店");
-		        System.out.println("附近的飲料店: " + nearbyPlaces);
-		        //傳送多筆座標
-		        handleNearLocationMessageEvent(event,nearbyPlaces);
+		        try {
+					handleNearLocationTemplate(event,location);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					TextMessage replyMessage = new TextMessage("取得附近店家失敗");
+		    		reply(replyMessage, event.getReplyToken());
+				}
 	        }else {
-	        	TextMessage replyMessage = new TextMessage("取得地址失敗");
+	        	TextMessage replyMessage = new TextMessage("查無附近店家地址");
 	    		reply(replyMessage, event.getReplyToken());
-	        }*/
+	        }
 		}else{
 			logger.info("笑死");
 			handleTextMessageEvent(event);
@@ -127,7 +123,7 @@ public class LineBot3Talk {
 		Message replyMessage = new LocationMessage("location", "基隆市中山區中和路168巷7弄54號", 25.06752, 121.585664);
 		reply(replyMessage, event.getReplyToken());
 	}
-	
+	/**
 	// 回覆多筆座標
 	public void handleNearLocationMessageEvent(MessageEvent<TextMessageContent> event, String nearbyPlaces) {
 		String replyToken = event.getReplyToken();
@@ -154,7 +150,6 @@ public class LineBot3Talk {
 			    List<Message> subMessages = messages.subList(i, endIndex);
 			    System.out.println("發送消息-i:" + i + ",endIndex:" + endIndex );
 			    
-			    
 			    ReplyMessage replyMessage = new ReplyMessage(replyToken, subMessages);
 			    System.out.println("replyToken:" + replyToken + ",subMessages:" + subMessages );
 			    
@@ -169,7 +164,7 @@ public class LineBot3Talk {
 			reply(replyMessage, event.getReplyToken());
 		}
 	}
-
+	*/
 	public void handleTextMessageEvent(MessageEvent<TextMessageContent> event) {
 		logger.info("SUCCESS:笑死");
 		TextMessage replyMessage = new TextMessage("笑死");
@@ -211,23 +206,18 @@ public class LineBot3Talk {
             if (results.length > 0) {
                 //取第一個结果的經緯度
                 LatLng location = results[0].geometry.location;
-                System.out.println("緯度: " + location.lat);
-                System.out.println("經度: " + location.lng);
-                
+                System.out.println("取得輸入地址緯度: " + location.lat);
+                System.out.println("取得輸入地址經度: " + location.lng);
                 return location.lat+","+location.lng;
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return "獲取位置信息發收錯誤";
+            System.out.println("獲取輸入地址位置訊息錯誤");
+            return "X";
         }
-        System.out.println("獲取位置信息發收錯誤");
+        System.out.println("獲取輸入地址位置訊息錯誤");
 		return "X";
     }
-    
-    private void replyTextMessage(String replyToken, String message) {
-        lineMessagingClient.replyMessage(new ReplyMessage(replyToken, new TextMessage(message)));
-    }
-	
 
 	@EventMapping
 	public Message handleStickerMessageEvent(MessageEvent<StickerMessageContent> event) throws URISyntaxException {
@@ -238,19 +228,8 @@ public class LineBot3Talk {
 
 	@EventMapping
 	public void handleDefaultMessageEvent(Event event) {
-		// 就是加入聊天室, 離開聊天室, 還有一些有的沒的事件
+		// 就是加入聊天室、離開聊天室等事件
 		logger.info("event: " + event);
-	}
-    
-	//回覆多筆座標
-	public static void mainNearLocationMessageEvent(String nearbyPlaces) {
-		logger.info("SUCCESS:多筆座標");
-		// 收到文字訊息做回覆
-		String[] token = nearbyPlaces.split(";");
-		for(int i = 0;i<token.length;i++) {
-			String[] object =token[i].split(",");
-			System.out.println("location"+","+object[0]+","+object[1]+","+object[2]);
-		}
 	}
     
     /**取得裝置當前位置(取到Server位置)
@@ -316,11 +295,11 @@ public class LineBot3Talk {
 	    GeoApiContext context = new GeoApiContext.Builder().apiKey(GOOGLE_MAPS_API_KEY).build();
 
 	    String[] latlng = location.split(",");
-	    // 查询附近饮料店
-	    double latitude = Double.parseDouble(latlng[0]);  // 使用者的纬度
-	    double longitude = Double.parseDouble(latlng[1]);  // 使用者的经度
-	    int radius = 1000;  // 搜索半径（单位：米）
-	    String type = "飲料店";  // 查询关键字
+	    // 查詢附近飲料店
+	    double latitude = Double.parseDouble(latlng[0]);  // 使用者的緯度
+	    double longitude = Double.parseDouble(latlng[1]);  // 使用者的經度
+	    int radius = 1000;  // 搜索半徑（單位：米）
+	    String type = "飲料店";  // 查詢關鍵键字
 
 	    NearbySearchRequest request = PlacesApi.nearbySearchQuery(context, new LatLng(latitude, longitude))
 	            .radius(radius)
@@ -330,7 +309,7 @@ public class LineBot3Talk {
 
 	    // 建立Flex Message列表
 	    List<PlacesSearchResult> results = Arrays.asList(response.results);
-	    int maxResults = Math.min(results.size(), 5);
+	    int maxResults = Math.min(results.size(), 5);	//查詢5筆
 	    List<Bubble> flexBubbles = new ArrayList<>();
 
 	    for (int i = 0; i < maxResults; i++) {
@@ -343,9 +322,10 @@ public class LineBot3Talk {
 	        
 	        Action action = new URIAction(
 	                "Send Location",
-	                URI.create("line://nv/location?lat=" + resultLatitude + "&lng=" + resultLongitude), null
+	                new URI("line://nv/location?lat=" + resultLatitude + "&lng=" + resultLongitude),
+	                null
 	        );
-	        // 建立消息模板
+	        // 建立訊息模板
 	        Bubble bubble = Bubble.builder()
 	                .body(Box.builder()
 	                        .layout(FlexLayout.VERTICAL)
@@ -374,7 +354,7 @@ public class LineBot3Talk {
 	                                        .aspectMode(Image.ImageAspectMode.Cover)
 	                                        .aspectRatio(Image.ImageAspectRatio.R1TO1)
 	                                        .margin(FlexMarginSize.MD)
-	                                        .action(action)  // 设置点击操作
+	                                        .action(action)  // 設置點擊操作
 	                                        .build()
 	                        ))
 	                        .build())
@@ -395,20 +375,7 @@ public class LineBot3Talk {
 	    lineMessagingClient.pushMessage(pushMessage).join();
 	}
 
-//  public static void main(String[] args) {
-//	  String place = "內湖路一段258巷69弄42號";
-//	  String location = getGoogleMapLocation(place);
-//	  System.out.println("當前位置: " + location);
-//	  
-//      if(!location.equals("X")) {
-//	        //附近飲料店
-//	        String nearbyPlaces = getNearbyPlaces(location, "飲料店");
-//	        System.out.println("附近的飲料店: " + nearbyPlaces);
-//	        //傳送多筆座標
-//	        handleNearLocationMessageEventmain(nearbyPlaces);
-//      }
-//  	}
-  
+	/**
 	// 回覆多筆座標
 	public static void handleNearLocationMessageEventmain(String nearbyPlaces) {
 
@@ -438,7 +405,7 @@ public class LineBot3Talk {
 			}
 		}
 	}
-
+	
     //取得附近飲料店：店名（緯度，經度）
     private static String getNearbyPlaces(String location, String keyword) {
         try {
@@ -487,7 +454,7 @@ public class LineBot3Talk {
 
         return "無法獲取附近的飲料店信息。";
     }
-    
+    */
 	/**
 	public static void main(String[] args) {
 		TestParamsDto dto = new TestParamsDto();

@@ -322,9 +322,10 @@ public class LineBot3Talk {
 	        
 	        Action action = new URIAction(
 	                "Send Location",
-	                new URI("line://nv/location?lat=" + resultLatitude + "&lng=" + resultLongitude),
+	                new URI("line://nv/location?lat=" +25.081725+ "&lng=" + 121.5708303),
 	                null
 	        );
+	        System.out.println("URIAction : lat" + resultLatitude + ",lng:" + resultLongitude );
 	        // 建立訊息模板
 	        Bubble bubble = Bubble.builder()
 	                .body(Box.builder()

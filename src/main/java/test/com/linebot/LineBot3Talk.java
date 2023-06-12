@@ -67,11 +67,11 @@ public class LineBot3Talk {
 	@Autowired
 	private LineMessagingClient lineMessagingClient;
 
-//	@Autowired
-//	private MainService mainService;
-//
-//	@Autowired
-//	private DetailService detailService;
+	@Autowired
+	private static MainService mainService;
+
+	@Autowired
+	private static DetailService detailService;
 
 	@EventMapping
 	public void handle(MessageEvent<TextMessageContent> event){
@@ -98,7 +98,7 @@ public class LineBot3Talk {
 			String[] str = originalMessageText.substring(1).split(" ");
 			//檢核輸入格式
 			if (str.length != 5) {
-				TextMessage replyMessage = new TextMessage("@"+userName + " 請輸入『+飲料 甜度 冰塊 大小 金額』");
+				TextMessage replyMessage = new TextMessage("@"+userName + " 注意空格位置,請輸入『+飲料 甜度 冰塊 大小 金額』");
 				reply(replyMessage, event.getReplyToken());
 			}
 			String drink = str[0];
@@ -125,7 +125,7 @@ public class LineBot3Talk {
 			detail.setUpdate(new Date());
 			detail.setUpdateName(userName);
 			detail.setStatus("0");
-//			detailService.save(detail);
+			detailService.save(detail);
 			TextMessage replyMessage = new TextMessage("@" + userName + "儲存成功");
 			reply(replyMessage, event.getReplyToken());
 		} else if (originalMessageText.equals("我誰")) {

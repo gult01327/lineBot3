@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 @SpringBootApplication
 @RequestMapping("/robot")
 @RestController
-@ComponentScan(basePackages = {"test.com.service"})
+//@ComponentScan(basePackages = {"test.com.service"})
 public class LineBot3Application {
 
 	public static void main(String[] args) {

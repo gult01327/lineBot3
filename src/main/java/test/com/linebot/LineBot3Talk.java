@@ -29,6 +29,7 @@ import com.google.maps.NearbySearchRequest;
 import com.google.maps.PlacesApi;
 import com.google.maps.model.GeocodingResult;
 import com.google.maps.model.LatLng;
+import com.google.maps.model.PlaceDetails;
 import com.google.maps.model.PlaceType;
 import com.google.maps.model.PlacesSearchResponse;
 import com.google.maps.model.PlacesSearchResult;
@@ -318,25 +319,33 @@ public class LineBot3Talk {
 	        PlacesSearchResult result = results.get(i);
 	        String name = result.name;
 	        String address = result.vicinity;
-	        double resultLatitude = result.geometry.location.lat;
-	        double resultLongitude = result.geometry.location.lng;
+	        double resultLatitude = result.geometry.location.lat;	//緯度
+	        double resultLongitude = result.geometry.location.lng;	//經度
 	        URI photoUrl = new URI("https://media.nownews.com/nn_media/thumbnail/2019/10/1570089924-27a9b9c9d7facd3422fe4610dd8ebe42-696x386.png");
+	        
 	        //點擊圖片觸發的action
-	        String placeId = result.placeId;
+	        String placeId = result.placeId;	//取得店家ID
 	        String encodedPlaceId = URLEncoder.encode(placeId, "UTF-8");
 	        String mapWebUrl = "https://www.google.com/maps/place/?q=place_id:" + encodedPlaceId;
-
+	        
+	        //獲取店家資訊
+	        PlaceDetails placeDetails = PlacesApi.placeDetails(context, placeId).await();
+	        // 獲取評分星數
+	        double rating = placeDetails.rating;
+	        // 獲取中文地址
+	        String chineseAddress = placeDetails.formattedAddress;
+	        // 獲取營業時間
+	        String openingHours = "";
+	        if (placeDetails.openingHours != null && placeDetails.openingHours.weekdayText != null) {
+	        	for (String weekdayText : placeDetails.openingHours.weekdayText) {
+	        		openingHours += weekdayText + "\n";
+	        	}
+	        }
+	        
+	        //點擊圖片觸發的action
 	        Action action = new URIAction(
 	                "Open Map",
 	                new URI(mapWebUrl),
-	                null
-	        );
-	        
-	        String encodedName = URLEncoder.encode(name, StandardCharsets.UTF_8);
-	        String mapUrl = "https://maps.google.com/maps?q=" + resultLatitude + "," + resultLongitude + "(" + encodedName + ")";
-	        Action action2 = new URIAction(
-	                "Open Map",
-	                new URI(mapUrl),
 	                null
 	        );
 
@@ -358,7 +367,19 @@ public class LineBot3Talk {
 	                                        .margin(FlexMarginSize.MD)
 	                                        .build(),
 	                                Text.builder()
-	                                        .text("(" + resultLatitude+","+resultLongitude+")")
+	                                        .text("Rating: " + rating)
+	                                        .size(FlexFontSize.SM)
+	                                        .wrap(true)
+	                                        .margin(FlexMarginSize.MD)
+	                                        .build(),
+	                                Text.builder()
+	                                        .text("Google Address: " + chineseAddress)
+	                                        .size(FlexFontSize.SM)
+	                                        .wrap(true)
+	                                        .margin(FlexMarginSize.MD)
+	                                        .build(),
+	                                Text.builder()
+	                                        .text("Opening Hours: " + openingHours)
 	                                        .size(FlexFontSize.SM)
 	                                        .wrap(true)
 	                                        .margin(FlexMarginSize.MD)

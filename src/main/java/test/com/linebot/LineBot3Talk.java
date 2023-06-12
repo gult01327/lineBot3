@@ -68,10 +68,10 @@ public class LineBot3Talk {
 	private LineMessagingClient lineMessagingClient;
 
 	@Autowired
-	private MainService MainServiceImpl;
+	private MainService mainService;
 
 	@Autowired
-	private DetailService DetailService;
+	private DetailService detailService;
 
 	@EventMapping
 	public void handle(MessageEvent<TextMessageContent> event) throws InterruptedException, ExecutionException {
@@ -112,7 +112,7 @@ public class LineBot3Talk {
 			detail.setUpdate(new Date());
 			detail.setUpdateName(userName);
 			detail.setStatus("0");
-			DetailService.save(detail);
+			detailService.save(detail);
 			TextMessage replyMessage = new TextMessage("@" + userName + "儲存成功");
 			reply(replyMessage, event.getReplyToken());
 		} else if (originalMessageText.equals("我誰")) {

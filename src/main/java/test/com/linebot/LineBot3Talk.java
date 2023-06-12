@@ -74,15 +74,26 @@ public class LineBot3Talk {
 	private DetailService detailService;
 
 	@EventMapping
-	public void handle(MessageEvent<TextMessageContent> event) throws InterruptedException, ExecutionException {
+	public void handle(MessageEvent<TextMessageContent> event){
 		String originalMessageText = event.getMessage().getText();
 		logger.info("Hello, Heroku log!");
 		// 範例：+飲料 甜度 冰塊 大小 金額
 		if (originalMessageText.substring(0, 1).equals("+") && originalMessageText.length() > 1) {
 			// 取得使用者資訊
 			String userId = event.getSource().getUserId();
-			UserProfileResponse userProfile = lineMessagingClient.getProfile(userId).get();
-			String userName = userProfile.getDisplayName();
+			UserProfileResponse userProfile;
+			String userName = "";
+			try {
+				userProfile = lineMessagingClient.getProfile(userId).get();
+				userName = userProfile.getDisplayName();
+				System.out.println("userId:" + userId+",userName: "+userName);
+			} catch (InterruptedException e) {
+				System.out.println("InterruptedException-取得userName失敗");
+				e.printStackTrace();
+			} catch (ExecutionException e) {
+				System.out.println("ExecutionException-取得userName失敗");
+				e.printStackTrace();
+			}
 			logger.info("新增飲料");
 			String[] str = originalMessageText.substring(1).split(" ");
 			if (str.length < 5) {
@@ -90,20 +101,21 @@ public class LineBot3Talk {
 				reply(replyMessage, event.getReplyToken());
 			}
 			String drink = str[0];
-			String suger = str[1];
+			String sugar = str[1];
 			String ice = str[2];
 			String size = str[3];
 			String pricestr = str[4];
 			int price = Integer.parseInt(pricestr);
+			System.out.println("新增飲料："+drink+",甜度："+sugar+",冰塊："+ice+",大小："+size+",價錢："+pricestr);
 			// 檢核輸入內容格式
-			if (suger.contains("冰") || suger.contains("溫") || suger.contains("熱") || ice.contains("糖")
+			if (sugar.contains("冰") || sugar.contains("溫") || sugar.contains("熱") || ice.contains("糖")
 					|| ice.contains("甜")) {
 				TextMessage replyMessage = new TextMessage("@" + userName + " 請依排列順序輸入『+飲料 甜度 冰塊 大小 金額』");
 				reply(replyMessage, event.getReplyToken());
 			}
 			DetailVo detail = new DetailVo();
 			detail.setDrink(drink);
-			detail.setSuger(suger);
+			detail.setSugar(sugar);
 			detail.setIce(ice);
 			detail.setSize(size);
 			detail.setPrice(price);

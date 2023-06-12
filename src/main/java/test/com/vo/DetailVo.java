@@ -15,7 +15,7 @@ public class DetailVo {
 	private String shopName;
 	private String userName;
 	private String drink;
-	private String suger;
+	private String sugar;
 	private String ice;
 	private String size;
 	private int price;
@@ -43,11 +43,11 @@ public class DetailVo {
 	public void setDrink(String drink) {
 		this.drink = drink;
 	}
-	public String getSuger() {
-		return suger;
+	public String getSugar() {
+		return sugar;
 	}
-	public void setSuger(String suger) {
-		this.suger = suger;
+	public void setSugar(String sugar) {
+		this.sugar = sugar;
 	}
 	public String getIce() {
 		return ice;

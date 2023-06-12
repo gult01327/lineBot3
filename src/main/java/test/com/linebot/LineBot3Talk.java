@@ -9,6 +9,9 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,6 +32,8 @@ import com.google.maps.NearbySearchRequest;
 import com.google.maps.PlacesApi;
 import com.google.maps.model.GeocodingResult;
 import com.google.maps.model.LatLng;
+import com.google.maps.model.OpeningHours;
+import com.google.maps.model.OpeningHours.Period;
 import com.google.maps.model.PlaceDetails;
 import com.google.maps.model.PlaceType;
 import com.google.maps.model.PlacesSearchResponse;
@@ -329,17 +334,30 @@ public class LineBot3Talk {
 	        String mapWebUrl = "https://www.google.com/maps/place/?q=place_id:" + encodedPlaceId;
 	        
 	        //獲取店家資訊
-	        PlaceDetails placeDetails = PlacesApi.placeDetails(context, placeId).await();
+	        PlaceDetails placeDetails = PlacesApi.placeDetails(context, placeId)
+	        	    .language("zh-TW")  // 指定語言為中文
+	        	    .await();
 	        // 獲取評分星數
 	        double rating = placeDetails.rating;
+	        // 格式化評分數到小數點第一位
+	        String formattedRating = new DecimalFormat("#.#").format(rating);
+	        String starIcon = "★";
 	        // 獲取中文地址
 	        String chineseAddress = placeDetails.formattedAddress;
-	        // 獲取營業時間
-	        String openingHours = "";
+	     // 取得店家的營業時間
+	        String todayOpeningHours = null;
 	        if (placeDetails.openingHours != null && placeDetails.openingHours.weekdayText != null) {
-	        	for (String weekdayText : placeDetails.openingHours.weekdayText) {
-	        		openingHours += weekdayText + "\n";
-	        	}
+	            LocalDate currentDate = LocalDate.now();
+	            DayOfWeek currentDayOfWeek = currentDate.getDayOfWeek();
+	            String[] weekdayText = placeDetails.openingHours.weekdayText;
+
+	            // 判斷今天是星期幾
+	            int dayOfWeekIndex = currentDayOfWeek.getValue() - 1;  // 假設 API 中星期一為第一個元素，而 Java DayOfWeek 中星期一為第一天
+
+	            if (dayOfWeekIndex >= 0 && dayOfWeekIndex < weekdayText.length) {
+	                String todayHours = weekdayText[dayOfWeekIndex];
+	                todayOpeningHours = todayHours.substring(todayHours.indexOf(":") + 1).trim();
+	            }
 	        }
 	        
 	        //點擊圖片觸發的action
@@ -361,25 +379,19 @@ public class LineBot3Talk {
 	                                        .margin(FlexMarginSize.NONE)
 	                                        .build(),
 	                                Text.builder()
-	                                        .text("Address: " + address)
+	                                        .text("評分: " + formattedRating+starIcon)
 	                                        .size(FlexFontSize.SM)
 	                                        .wrap(true)
 	                                        .margin(FlexMarginSize.MD)
 	                                        .build(),
 	                                Text.builder()
-	                                        .text("Rating: " + rating)
+	                                        .text("地址: " + chineseAddress)
 	                                        .size(FlexFontSize.SM)
 	                                        .wrap(true)
 	                                        .margin(FlexMarginSize.MD)
 	                                        .build(),
 	                                Text.builder()
-	                                        .text("Google Address: " + chineseAddress)
-	                                        .size(FlexFontSize.SM)
-	                                        .wrap(true)
-	                                        .margin(FlexMarginSize.MD)
-	                                        .build(),
-	                                Text.builder()
-	                                        .text("Opening Hours: " + openingHours)
+	                                        .text("營業時間: " + todayOpeningHours)
 	                                        .size(FlexFontSize.SM)
 	                                        .wrap(true)
 	                                        .margin(FlexMarginSize.MD)

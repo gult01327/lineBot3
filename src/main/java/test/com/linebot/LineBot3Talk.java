@@ -8,6 +8,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -321,8 +322,19 @@ public class LineBot3Talk {
 	        double resultLongitude = result.geometry.location.lng;
 	        URI photoUrl = new URI("https://media.nownews.com/nn_media/thumbnail/2019/10/1570089924-27a9b9c9d7facd3422fe4610dd8ebe42-696x386.png");
 	        //點擊圖片觸發的action
-	        String mapUrl = "https://maps.google.com/maps?q=" + resultLatitude + "," + resultLongitude;
+	        String placeId = result.placeId;
+	        String encodedPlaceId = URLEncoder.encode(placeId, "UTF-8");
+	        String mapWebUrl = "https://www.google.com/maps/place/?q=place_id:" + encodedPlaceId;
+
 	        Action action = new URIAction(
+	                "Open Map",
+	                new URI(mapWebUrl),
+	                null
+	        );
+	        
+	        String encodedName = URLEncoder.encode(name, StandardCharsets.UTF_8);
+	        String mapUrl = "https://maps.google.com/maps?q=" + resultLatitude + "," + resultLongitude + "(" + encodedName + ")";
+	        Action action2 = new URIAction(
 	                "Open Map",
 	                new URI(mapUrl),
 	                null

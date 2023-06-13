@@ -19,6 +19,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.maps.GeoApiContext;
@@ -76,15 +78,6 @@ public class LineBot3Talk {
 
 	@Autowired
 	private static DetailService detailService;
-	
-    @Bean
-    public static DataSource dataSource() {
-        String databaseUrl = System.getenv("JDBC_DATABASE_URL");
-        return DataSourceBuilder.create()
-                .url(databaseUrl)
-                .build();
-    }
-
 
 	@EventMapping
 	public void handle(MessageEvent<TextMessageContent> event){
@@ -139,7 +132,7 @@ public class LineBot3Talk {
 			detail.setUpdateName(userName);
 			detail.setStatus("0");
 			System.out.println("========開始新增飲料=======");
-			detailService.save(detail);
+			createDetail(detail);
 			System.out.println("========回傳新增成功訊息=======");
 			TextMessage replyMessage = new TextMessage("@" + userName + "儲存成功");
 			reply(replyMessage, event.getReplyToken());
@@ -266,6 +259,12 @@ public class LineBot3Talk {
 		}
 		System.out.println("獲取輸入地址位置訊息錯誤");
 		return "X";
+	}
+	
+	@PostMapping("/detail")
+	public static Detail createDetail(@RequestBody Detail detail) {
+		logger.info("=====新增資料 JPA======");
+		return detailService.save(detail);
 	}
 
 	@EventMapping
@@ -486,11 +485,30 @@ public class LineBot3Talk {
 	 * return "無法獲取附近的飲料店信息。"; }
 	 */
 	/**
-	 * public static void main(String[] args) { TestParamsDto dto = new
+	 * public static void main(String[] args) { 
+	 * TestParamsDto dto = new
 	 * TestParamsDto(); System.out.println("沒有設參數的物件:"+dto.printParam());
 	 * System.out.println("沒有設參數的物件 plus():"+dto.plus()); TestParamsDto dto2 = new
 	 * TestParamsDto(1,2); System.out.println("有參數的物件：" + dto2.printParam());
 	 * System.out.println("有參數的物件 plus()：" + dto2.plus()); }
 	 */
+	/**
+	public static void main(String[] args) { 
+		Detail detail = new Detail();
+		detail.setShopName("發發");
+		detail.setDrink("飲料");
+		detail.setSugar("微糖");
+		detail.setIce("去冰");
+		detail.setSize("大");
+		detail.setPrice(100);
+		detail.setUserName("小馬");
+		detail.setInputdate(new Date());
+		detail.setUpdate(new Date());
+		detail.setUpdateName("小馬");
+		detail.setStatus("0");
+		System.out.println("========開始新增飲料=======");
+		detailService.save(detail);
+		System.out.println("========回傳新增成功訊息=======");
+	}*/
 	
 }

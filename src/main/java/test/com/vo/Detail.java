@@ -2,17 +2,21 @@ package test.com.vo;
 
 import java.util.Date;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Table;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Data
+@Table(name="detail")
 @NoArgsConstructor
-public class DetailVo {
+public class Detail {
 	
+	@Column(name="shop_name")
 	private String shopName;
+	@Column(name="user_name")
 	private String userName;
 	private String drink;
 	private String sugar;
@@ -21,6 +25,7 @@ public class DetailVo {
 	private int price;
 	private Date inputdate;
 	private Date update;
+	@Column(name="update_name")
 	private String updateName;
 	private String status;
 	

@@ -12,9 +12,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import javax.sql.DataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.maps.GeoApiContext;
@@ -57,7 +61,7 @@ import com.linecorp.bot.spring.boot.annotation.LineMessageHandler;
 import lombok.extern.slf4j.Slf4j;
 import test.com.service.DetailService;
 import test.com.service.MainService;
-import test.com.vo.DetailVo;
+import test.com.vo.Detail;
 
 @RestController
 @LineMessageHandler
@@ -72,6 +76,15 @@ public class LineBot3Talk {
 
 	@Autowired
 	private static DetailService detailService;
+	
+    @Bean
+    public static DataSource dataSource() {
+        String databaseUrl = System.getenv("JDBC_DATABASE_URL");
+        return DataSourceBuilder.create()
+                .url(databaseUrl)
+                .build();
+    }
+
 
 	@EventMapping
 	public void handle(MessageEvent<TextMessageContent> event){
@@ -114,7 +127,7 @@ public class LineBot3Talk {
 				TextMessage replyMessage = new TextMessage("@" + userName + " 請依排列順序輸入『+飲料 甜度 冰塊 大小 金額』");
 				reply(replyMessage, event.getReplyToken());
 			}
-			DetailVo detail = new DetailVo();
+			Detail detail = new Detail();
 			detail.setDrink(drink);
 			detail.setSugar(sugar);
 			detail.setIce(ice);
@@ -125,7 +138,9 @@ public class LineBot3Talk {
 			detail.setUpdate(new Date());
 			detail.setUpdateName(userName);
 			detail.setStatus("0");
+			System.out.println("========開始新增飲料=======");
 			detailService.save(detail);
+			System.out.println("========回傳新增成功訊息=======");
 			TextMessage replyMessage = new TextMessage("@" + userName + "儲存成功");
 			reply(replyMessage, event.getReplyToken());
 		} else if (originalMessageText.equals("我誰")) {
@@ -307,7 +322,7 @@ public class LineBot3Talk {
 	 * return "無法獲取當前位置信息。"; }
 	 */
 
-	public static void handleNearLocationTemplate(MessageEvent<TextMessageContent> event, String location)
+	public void handleNearLocationTemplate(MessageEvent<TextMessageContent> event, String location)
 			throws Exception {
 		String GOOGLE_MAPS_API_KEY = "AIzaSyBGQRnDgWX0c4WJbUNiBxU6MbOvDFPD_QA";
 		String LINE_CHANNEL_ACCESS_TOKEN = "u2559vPjHa8bDO7hrn0C232jQHdcC2NG68Fo6bGl7VRxDc36eT7w74pWlM0SzbIsCvxEKPJa7byGFX9KIOGDYz5TUFoYnig574mtiCFY5NF3S73DpPstr8rmYejYCDpm5QvFgNZL8mRwlhHiykrzNQdB04t89/1O/w1cDnyilFU=";
@@ -477,5 +492,5 @@ public class LineBot3Talk {
 	 * TestParamsDto(1,2); System.out.println("有參數的物件：" + dto2.printParam());
 	 * System.out.println("有參數的物件 plus()：" + dto2.plus()); }
 	 */
-
+	
 }

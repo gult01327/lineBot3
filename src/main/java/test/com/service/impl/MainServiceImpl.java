@@ -12,31 +12,31 @@
 //import org.springframework.stereotype.Service;
 //
 //import test.com.service.MainService;
-//import test.com.vo.MainVo;
+//import test.com.vo.Main;
 //
 //@Service
 //public class MainServiceImpl implements MainService {
 //
 //	@Override
-//	public List<MainVo> findAll() {
+//	public List<Main> findAll() {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public List<MainVo> findAll(Sort sort) {
+//	public List<Main> findAll(Sort sort) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public List<MainVo> findAllById(Iterable<Long> ids) {
+//	public List<Main> findAllById(Iterable<Long> ids) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public <S extends MainVo> List<S> saveAll(Iterable<S> entities) {
+//	public <S extends Main> List<S> saveAll(Iterable<S> entities) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
@@ -48,19 +48,19 @@
 //	}
 //
 //	@Override
-//	public <S extends MainVo> S saveAndFlush(S entity) {
+//	public <S extends Main> S saveAndFlush(S entity) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public <S extends MainVo> List<S> saveAllAndFlush(Iterable<S> entities) {
+//	public <S extends Main> List<S> saveAllAndFlush(Iterable<S> entities) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public void deleteAllInBatch(Iterable<MainVo> entities) {
+//	public void deleteAllInBatch(Iterable<Main> entities) {
 //		// TODO Auto-generated method stub
 //		
 //	}
@@ -78,49 +78,50 @@
 //	}
 //
 //	@Override
-//	public MainVo getOne(Long id) {
+//	public Main getOne(Long id) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public MainVo getById(Long id) {
+//	public Main getById(Long id) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public MainVo getReferenceById(Long id) {
+//	public Main getReferenceById(Long id) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public <S extends MainVo> List<S> findAll(Example<S> example) {
+//	public <S extends Main> List<S> findAll(Example<S> example) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public <S extends MainVo> List<S> findAll(Example<S> example, Sort sort) {
+//	public <S extends Main> List<S> findAll(Example<S> example, Sort sort) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public Page<MainVo> findAll(Pageable pageable) {
+//	public Page<Main> findAll(Pageable pageable) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public <S extends MainVo> S save(S entity) {
+//	public <S extends Main> S save(S entity) {
 //		// TODO Auto-generated method stub
+//		System.out.println("========SQL=======");
 //		return null;
 //	}
 //
 //	@Override
-//	public Optional<MainVo> findById(Long id) {
+//	public Optional<Main> findById(Long id) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
@@ -144,7 +145,7 @@
 //	}
 //
 //	@Override
-//	public void delete(MainVo entity) {
+//	public void delete(Main entity) {
 //		// TODO Auto-generated method stub
 //		
 //	}
@@ -156,7 +157,7 @@
 //	}
 //
 //	@Override
-//	public void deleteAll(Iterable<? extends MainVo> entities) {
+//	public void deleteAll(Iterable<? extends Main> entities) {
 //		// TODO Auto-generated method stub
 //		
 //	}
@@ -168,31 +169,31 @@
 //	}
 //
 //	@Override
-//	public <S extends MainVo> Optional<S> findOne(Example<S> example) {
+//	public <S extends Main> Optional<S> findOne(Example<S> example) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public <S extends MainVo> Page<S> findAll(Example<S> example, Pageable pageable) {
+//	public <S extends Main> Page<S> findAll(Example<S> example, Pageable pageable) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public <S extends MainVo> long count(Example<S> example) {
+//	public <S extends Main> long count(Example<S> example) {
 //		// TODO Auto-generated method stub
 //		return 0;
 //	}
 //
 //	@Override
-//	public <S extends MainVo> boolean exists(Example<S> example) {
+//	public <S extends Main> boolean exists(Example<S> example) {
 //		// TODO Auto-generated method stub
 //		return false;
 //	}
 //
 //	@Override
-//	public <S extends MainVo, R> R findBy(Example<S> example, Function<FetchableFluentQuery<S>, R> queryFunction) {
+//	public <S extends Main, R> R findBy(Example<S> example, Function<FetchableFluentQuery<S>, R> queryFunction) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}

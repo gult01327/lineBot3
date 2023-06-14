@@ -2,6 +2,8 @@ package test.com.service;
 
 import java.net.URISyntaxException;
 
+import org.springframework.stereotype.Service;
+
 import com.linecorp.bot.model.event.MessageEvent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
 import com.linecorp.bot.model.message.FlexMessage;
@@ -9,6 +11,7 @@ import com.linecorp.bot.model.message.Message;
 
 import test.com.model.Detail;
 
+@Service
 public interface DetailService {
 
 	public Message handleTextMessageEvent(MessageEvent<TextMessageContent> event);

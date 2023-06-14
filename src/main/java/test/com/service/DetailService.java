@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -197,8 +198,8 @@ public class DetailService {
 				.contents(Carousel.builder().contents(flexBubbles).build()).build();
 		return flexMessage;
 	}
-	
-	//新增飲料
+
+	// 新增飲料
 	public Message addDrink(String userId, String userName, String originalMessageText) {
 		logger.info("進入SERVICCE method: addDrink");
 		String[] str = originalMessageText.substring(1).split(" ");
@@ -233,33 +234,36 @@ public class DetailService {
 		logger.info("========開始新增飲料=======");
 		Detail returnDetail = insertDetail(detail);
 		logger.info("========回傳新增成功訊息=======");
-		TextMessage replyMessage = new TextMessage("@" + userId + "儲存成功");
+		TextMessage replyMessage = new TextMessage("@" + userId + "新增成功，訂單編號：" + returnDetail.getId());
 		return replyMessage;
 	}
-	//存入DB
+
+	// 存入DB
 	public Detail insertDetail(@RequestBody Detail detail) {
 		logger.info("=====新增資料 JPA======");
 		return detailDao.save(detail);
 	}
-	
-	//修改飲料
+
+	// 修改飲料
 	public Message updateDrink(String userId, String userName, String originalMessageText) {
 		logger.info("進入SERVICCE method: updateDrink");
 		String[] str = originalMessageText.substring(1).split(" ");
 		// 檢核輸入格式
 		if (str.length != 6) {
 			logger.info("======新增飲料:空格位置錯誤=========");
-			TextMessage replyMessage = new TextMessage("@" + userId + "，注意空格位置,請輸入『+舊飲料 新飲料 甜度 冰塊 大小 金額』");
+			TextMessage replyMessage = new TextMessage("@" + userId + "，注意空格位置,請輸入『%飲料 甜度 冰塊 大小 金額 訂單編號』");
 			return replyMessage;
 		}
-		String oleDrink = str[0];
-		String newDrink = str[1];
-		String sugar = str[2];
-		String ice = str[3];
-		String size = str[4];
-		String pricestr = str[5];
+		String drink = str[0];
+		String sugar = str[1];
+		String ice = str[2];
+		String size = str[3];
+		String pricestr = str[4];
+		String idstr = str[5];
 		int price = Integer.parseInt(pricestr);
-		logger.info("修改飲料(舊)：" + oleDrink + ",飲料(新)：" + newDrink + ",甜度：" + sugar + ",冰塊：" + ice + ",大小：" + size + ",價錢：" + pricestr);
+		Long id = Long.parseLong(idstr);
+		logger.info(
+				"修改飲料：" + drink + ",甜度：" + sugar + ",冰塊：" + ice + ",大小：" + size + ",價錢：" + pricestr + ",訂單編號：" + idstr);
 		// 檢核輸入內容格式
 		if (sugar.contains("冰") || sugar.contains("溫") || sugar.contains("熱") || ice.contains("糖")
 				|| ice.contains("甜")) {
@@ -267,7 +271,7 @@ public class DetailService {
 			return replyMessage;
 		}
 		Detail detail = new Detail();
-		detail.setDrink(newDrink);
+		detail.setDrink(drink);
 		detail.setSugar(sugar);
 		detail.setIce(ice);
 		detail.setSize(size);
@@ -275,18 +279,35 @@ public class DetailService {
 		detail.setUpdate(new Date());
 		detail.setUpdateName(userName);
 		detail.setStatus("0");
+		detail.setId(id);
 		logger.info("========開始修改飲料=======");
-		Detail returnDetail = updateDetail(detail,oleDrink);
-		logger.info("========回傳修改成功訊息=======");
-		TextMessage replyMessage = new TextMessage("@" + userId + "修改成功");
+		Detail returnDetail = updateDetail(detail);
+		logger.info("========回傳修改訊息=======");
+		String returnStr = "";
+		if (returnDetail != null) {
+			logger.info("========修改成功=======");
+			returnStr = "編號:" + returnDetail.getId() + "修改成功";
+		} else {
+			logger.info("========查無訂單編號=======");
+			returnStr = "查無訂單編號:" + id;
+		}
+		TextMessage replyMessage = new TextMessage("@" + userId + "，" + returnStr);
 		return replyMessage;
 	}
-	
-	//修改DB
-	public Detail updateDetail(Detail detail ,String oleDrink){
-		logger.info("=====修改資料 JPA======");
-		return detailDao.update(oleDrink,detail.getDrink(),detail.getSugar(), detail.getIce(),
-				detail.getSize(),detail.getPrice(),detail.getUpdate(),detail.getUpdateName());
+
+	// 修改DB
+	public Detail updateDetail(Detail detail) {
+		Detail returnDetail = null;
+		logger.info("=====查詢資料 JPA======");
+		Optional<Detail> optionalDetail = detailDao.findById(detail.getId());
+		if (optionalDetail.isPresent()) {
+			logger.info("=====修改資料 JPA======");
+			returnDetail = detailDao.save(detail);
+		} else {
+			logger.info("=====查無訂單編號======");
+		}
+
+		return returnDetail;
 	}
 
 }

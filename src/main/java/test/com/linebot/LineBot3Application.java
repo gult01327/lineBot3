@@ -65,7 +65,7 @@ public class LineBot3Application {
 			logger.info("取得回傳字串：" + replyMessage);
 			reply(replyMessage, event.getReplyToken());
 		} else if (originalMessageText.substring(0, 1).equals("%") && originalMessageText.length() > 1) {
-			// 修改範例：%舊飲料 新飲料 甜度 冰塊 大小 金額
+			// 修改範例：%新飲料 甜度 冰塊 大小 金額 訂單編號(line bot新增後回傳)
 			logger.info("========修改飲料=========");
 			Message replyMessage = detailService.updateDrink(userId, userName, originalMessageText);
 			logger.info("取得回傳字串：" + replyMessage);

@@ -1,4 +1,4 @@
-package test.com.vo;
+package test.com.model;
 
 import java.util.Date;
 
@@ -10,38 +10,66 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name="main")
-@NoArgsConstructor
-public class Main {
+@Table(name="detail")
+public class Detail {
 	
 	@Column(name="shop_name")
 	private String shopName;
-	private String date;
-	@Column(name="sum_price")
-	private int sumPrice;
+	@Column(name="user_name")
+	private String userName;
+	private String drink;
+	private String sugar;
+	private String ice;
+	private String size;
+	private int price;
 	private Date inputdate;
 	private Date update;
 	@Column(name="update_name")
 	private String updateName;
 	private String status;
 	
+
 	public String getShopName() {
 		return shopName;
 	}
 	public void setShopName(String shopName) {
 		this.shopName = shopName;
 	}
-	public String getDate() {
-		return date;
+	public String getUserName() {
+		return userName;
 	}
-	public void setDate(String date) {
-		this.date = date;
+	public void setUserName(String userName) {
+		this.userName = userName;
 	}
-	public int getSumPrice() {
-		return sumPrice;
+	public String getDrink() {
+		return drink;
 	}
-	public void setSumPrice(int sumPrice) {
-		this.sumPrice = sumPrice;
+	public void setDrink(String drink) {
+		this.drink = drink;
+	}
+	public String getSugar() {
+		return sugar;
+	}
+	public void setSugar(String sugar) {
+		this.sugar = sugar;
+	}
+	public String getIce() {
+		return ice;
+	}
+	public void setIce(String ice) {
+		this.ice = ice;
+	}
+	public String getSize() {
+		return size;
+	}
+	public void setSize(String size) {
+		this.size = size;
+	}
+	public int getPrice() {
+		return price;
+	}
+	public void setPrice(int price) {
+		this.price = price;
 	}
 	public Date getInputdate() {
 		return inputdate;
@@ -67,6 +95,5 @@ public class Main {
 	public void setStatus(String status) {
 		this.status = status;
 	}
-	
 	
 }

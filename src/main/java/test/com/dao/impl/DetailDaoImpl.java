@@ -1,4 +1,4 @@
-//package test.com.service.impl;
+//package test.com.dao.impl;
 //
 //import java.util.List;
 //import java.util.Optional;
@@ -9,34 +9,32 @@
 //import org.springframework.data.domain.Pageable;
 //import org.springframework.data.domain.Sort;
 //import org.springframework.data.repository.query.FluentQuery.FetchableFluentQuery;
-//import org.springframework.stereotype.Service;
 //
-//import test.com.service.MainService;
-//import test.com.vo.Main;
+//import test.com.dao.DetailDao;
+//import test.com.model.Detail;
 //
-//@Service
-//public class MainServiceImpl implements MainService {
+//public class DetailDaoImpl implements DetailDao {
 //
 //	@Override
-//	public List<Main> findAll() {
+//	public List<Detail> findAll() {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public List<Main> findAll(Sort sort) {
+//	public List<Detail> findAll(Sort sort) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public List<Main> findAllById(Iterable<Long> ids) {
+//	public List<Detail> findAllById(Iterable<Long> ids) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public <S extends Main> List<S> saveAll(Iterable<S> entities) {
+//	public <S extends Detail> List<S> saveAll(Iterable<S> entities) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
@@ -48,19 +46,19 @@
 //	}
 //
 //	@Override
-//	public <S extends Main> S saveAndFlush(S entity) {
+//	public <S extends Detail> S saveAndFlush(S entity) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public <S extends Main> List<S> saveAllAndFlush(Iterable<S> entities) {
+//	public <S extends Detail> List<S> saveAllAndFlush(Iterable<S> entities) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public void deleteAllInBatch(Iterable<Main> entities) {
+//	public void deleteAllInBatch(Iterable<Detail> entities) {
 //		// TODO Auto-generated method stub
 //		
 //	}
@@ -78,50 +76,49 @@
 //	}
 //
 //	@Override
-//	public Main getOne(Long id) {
+//	public Detail getOne(Long id) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public Main getById(Long id) {
+//	public Detail getById(Long id) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public Main getReferenceById(Long id) {
+//	public Detail getReferenceById(Long id) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public <S extends Main> List<S> findAll(Example<S> example) {
+//	public <S extends Detail> List<S> findAll(Example<S> example) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public <S extends Main> List<S> findAll(Example<S> example, Sort sort) {
+//	public <S extends Detail> List<S> findAll(Example<S> example, Sort sort) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public Page<Main> findAll(Pageable pageable) {
+//	public Page<Detail> findAll(Pageable pageable) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public <S extends Main> S save(S entity) {
+//	public <S extends Detail> S save(S entity) {
 //		// TODO Auto-generated method stub
-//		System.out.println("========SQL=======");
 //		return null;
 //	}
 //
 //	@Override
-//	public Optional<Main> findById(Long id) {
+//	public Optional<Detail> findById(Long id) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
@@ -145,7 +142,7 @@
 //	}
 //
 //	@Override
-//	public void delete(Main entity) {
+//	public void delete(Detail entity) {
 //		// TODO Auto-generated method stub
 //		
 //	}
@@ -157,7 +154,7 @@
 //	}
 //
 //	@Override
-//	public void deleteAll(Iterable<? extends Main> entities) {
+//	public void deleteAll(Iterable<? extends Detail> entities) {
 //		// TODO Auto-generated method stub
 //		
 //	}
@@ -169,33 +166,35 @@
 //	}
 //
 //	@Override
-//	public <S extends Main> Optional<S> findOne(Example<S> example) {
+//	public <S extends Detail> Optional<S> findOne(Example<S> example) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public <S extends Main> Page<S> findAll(Example<S> example, Pageable pageable) {
+//	public <S extends Detail> Page<S> findAll(Example<S> example, Pageable pageable) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
 //
 //	@Override
-//	public <S extends Main> long count(Example<S> example) {
+//	public <S extends Detail> long count(Example<S> example) {
 //		// TODO Auto-generated method stub
 //		return 0;
 //	}
 //
 //	@Override
-//	public <S extends Main> boolean exists(Example<S> example) {
+//	public <S extends Detail> boolean exists(Example<S> example) {
 //		// TODO Auto-generated method stub
 //		return false;
 //	}
 //
 //	@Override
-//	public <S extends Main, R> R findBy(Example<S> example, Function<FetchableFluentQuery<S>, R> queryFunction) {
+//	public <S extends Detail, R> R findBy(Example<S> example, Function<FetchableFluentQuery<S>, R> queryFunction) {
 //		// TODO Auto-generated method stub
 //		return null;
 //	}
+//
+//	
 //
 //}

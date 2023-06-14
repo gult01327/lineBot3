@@ -297,6 +297,11 @@ public class DetailService {
 		logger.info("=====查詢資料 JPA======");
 		Optional<Detail> optionalDetail = detailDao.findById(detail.getId());
 		if (optionalDetail.isPresent()) {
+			logger.info("撈出舊資料");
+			Detail oldDetail = optionalDetail.get();
+			//把須維持舊資料狀態的欄位寫入
+			detail.setUserName(oldDetail.getUserName());
+			detail.setInputdate(oldDetail.getInputdate());
 			logger.info("=====修改資料 JPA======");
 			returnDetail = detailDao.save(detail);
 		} else {

@@ -13,8 +13,6 @@ import javax.persistence.Table;
 @Table(name = "detail")
 public class Detail {
 
-	@Column(name = "shop_name")
-	private String shopName;
 	@Column(name = "user_name")
 	private String userName;
 	private String drink;
@@ -31,13 +29,6 @@ public class Detail {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	public String getShopName() {
-		return shopName;
-	}
-
-	public void setShopName(String shopName) {
-		this.shopName = shopName;
-	}
 
 	public String getUserName() {
 		return userName;

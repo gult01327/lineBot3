@@ -1,7 +1,6 @@
 package test.com.linebot;
 
 import java.net.URISyntaxException;
-import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -9,11 +8,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.linecorp.bot.client.LineMessagingClient;
@@ -34,7 +31,9 @@ import com.linecorp.bot.spring.boot.annotation.LineMessageHandler;
 import test.com.service.DetailService;
 
 @SpringBootApplication
-@RequestMapping("/robot")
+@ComponentScan(basePackageClasses = { DetailService.class })
+@EnableJpaRepositories("test.com.dao")
+@EntityScan("test.com.model") 
 @RestController
 @LineMessageHandler
 public class LineBot3Application {
@@ -44,7 +43,7 @@ public class LineBot3Application {
 	private LineMessagingClient lineMessagingClient;
 
 	@Autowired
-	private static DetailService detailService;
+	private DetailService detailService;
 
 	public static void main(String[] args) {
 		SpringApplication.run(LineBot3Application.class, args);
@@ -132,11 +131,6 @@ public class LineBot3Application {
 	public void handleDefaultMessageEvent(Event event) {
 		// 就是加入聊天室、離開聊天室等事件
 		logger.info("event: " + event);
-	}
-
-	@GetMapping("/test")
-	public ResponseEntity<String> test() {
-		return new ResponseEntity<String>("Hello FARMERTEST", HttpStatus.OK);
 	}
 
 }

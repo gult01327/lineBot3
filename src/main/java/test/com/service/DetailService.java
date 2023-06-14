@@ -15,6 +15,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -48,7 +51,7 @@ import test.com.dao.DetailDao;
 import test.com.model.Detail;
 
 @Service
-public class DetailService{
+public class DetailService {
 	private static final Logger logger = LoggerFactory.getLogger(DetailService.class);
 
 	@Autowired
@@ -73,7 +76,7 @@ public class DetailService{
 	}
 
 	public String getGoogleMapLocation(String address) {
-		logger.info("進入SERVICCE method: getGoogleMapLocation" );
+		logger.info("進入SERVICCE method: getGoogleMapLocation");
 		// google map金鑰
 		String GOOGLE_API_KEY = "AIzaSyBGQRnDgWX0c4WJbUNiBxU6MbOvDFPD_QA";
 		GeoApiContext context = new GeoApiContext.Builder().apiKey(GOOGLE_API_KEY).build();
@@ -98,7 +101,7 @@ public class DetailService{
 
 	public FlexMessage handleNearLocationTemplate(MessageEvent<TextMessageContent> event, String location)
 			throws Exception {
-		logger.info("進入SERVICCE method: handleNearLocationTemplate" );
+		logger.info("進入SERVICCE method: handleNearLocationTemplate");
 //		String LINE_CHANNEL_ACCESS_TOKEN = "u2559vPjHa8bDO7hrn0C232jQHdcC2NG68Fo6bGl7VRxDc36eT7w74pWlM0SzbIsCvxEKPJa7byGFX9KIOGDYz5TUFoYnig574mtiCFY5NF3S73DpPstr8rmYejYCDpm5QvFgNZL8mRwlhHiykrzNQdB04t89/1O/w1cDnyilFU=";
 		// 初始化Line Messaging Client
 //		LineMessagingClientBuilder builder = LineMessagingClient.builder(LINE_CHANNEL_ACCESS_TOKEN);
@@ -194,14 +197,15 @@ public class DetailService{
 				.contents(Carousel.builder().contents(flexBubbles).build()).build();
 		return flexMessage;
 	}
-
+	
+	//新增飲料
 	public Message addDrink(String userId, String userName, String originalMessageText) {
-		logger.info("進入SERVICCE method: addDrink" );
+		logger.info("進入SERVICCE method: addDrink");
 		String[] str = originalMessageText.substring(1).split(" ");
 		// 檢核輸入格式
 		if (str.length != 5) {
 			logger.info("======新增飲料:空格位置錯誤=========");
-			TextMessage replyMessage = new TextMessage("@" + userName + " 注意空格位置,請輸入『+飲料 甜度 冰塊 大小 金額』");
+			TextMessage replyMessage = new TextMessage("@" + userId + "，注意空格位置,請輸入『+飲料 甜度 冰塊 大小 金額』");
 			return replyMessage;
 		}
 		String drink = str[0];
@@ -214,7 +218,7 @@ public class DetailService{
 		// 檢核輸入內容格式
 		if (sugar.contains("冰") || sugar.contains("溫") || sugar.contains("熱") || ice.contains("糖")
 				|| ice.contains("甜")) {
-			TextMessage replyMessage = new TextMessage("@" + userName + " 請依排列順序輸入『+飲料 甜度 冰塊 大小 金額』");
+			TextMessage replyMessage = new TextMessage("@" + userId + "，請依排列順序輸入『+飲料 甜度 冰塊 大小 金額』");
 			return replyMessage;
 		}
 		Detail detail = new Detail();
@@ -225,19 +229,64 @@ public class DetailService{
 		detail.setPrice(price);
 		detail.setUserName(userName);
 		detail.setInputdate(new Date());
+		detail.setStatus("0");
+		logger.info("========開始新增飲料=======");
+		Detail returnDetail = insertDetail(detail);
+		logger.info("========回傳新增成功訊息=======");
+		TextMessage replyMessage = new TextMessage("@" + userId + "儲存成功");
+		return replyMessage;
+	}
+	//存入DB
+	public Detail insertDetail(@RequestBody Detail detail) {
+		logger.info("=====新增資料 JPA======");
+		return detailDao.save(detail);
+	}
+	
+	//修改飲料
+	public Message updateDrink(String userId, String userName, String originalMessageText) {
+		logger.info("進入SERVICCE method: updateDrink");
+		String[] str = originalMessageText.substring(1).split(" ");
+		// 檢核輸入格式
+		if (str.length != 6) {
+			logger.info("======新增飲料:空格位置錯誤=========");
+			TextMessage replyMessage = new TextMessage("@" + userId + "，注意空格位置,請輸入『+舊飲料 新飲料 甜度 冰塊 大小 金額』");
+			return replyMessage;
+		}
+		String oleDrink = str[0];
+		String newDrink = str[1];
+		String sugar = str[2];
+		String ice = str[3];
+		String size = str[4];
+		String pricestr = str[5];
+		int price = Integer.parseInt(pricestr);
+		logger.info("修改飲料(舊)：" + oleDrink + ",飲料(新)：" + newDrink + ",甜度：" + sugar + ",冰塊：" + ice + ",大小：" + size + ",價錢：" + pricestr);
+		// 檢核輸入內容格式
+		if (sugar.contains("冰") || sugar.contains("溫") || sugar.contains("熱") || ice.contains("糖")
+				|| ice.contains("甜")) {
+			TextMessage replyMessage = new TextMessage("@" + userId + "，請依排列順序輸入『+飲料 甜度 冰塊 大小 金額』");
+			return replyMessage;
+		}
+		Detail detail = new Detail();
+		detail.setDrink(newDrink);
+		detail.setSugar(sugar);
+		detail.setIce(ice);
+		detail.setSize(size);
+		detail.setPrice(price);
 		detail.setUpdate(new Date());
 		detail.setUpdateName(userName);
 		detail.setStatus("0");
-		logger.info("========開始新增飲料=======");
-		Detail returnDetail = createDetail(detail);
-		logger.info("========回傳新增成功訊息=======");
-		TextMessage replyMessage = new TextMessage("@" + userName + "儲存成功");
+		logger.info("========開始修改飲料=======");
+		Detail returnDetail = updateDetail(detail,oleDrink);
+		logger.info("========回傳修改成功訊息=======");
+		TextMessage replyMessage = new TextMessage("@" + userId + "修改成功");
 		return replyMessage;
 	}
-
-	public Detail createDetail(@RequestBody Detail detail) {
-		logger.info("=====新增資料 JPA======");
-		return detailDao.save(detail);
+	
+	//修改DB
+	public Detail updateDetail(Detail detail ,String oleDrink){
+		logger.info("=====修改資料 JPA======");
+		return detailDao.update(oleDrink,detail.getDrink(),detail.getSugar(), detail.getIce(),
+				detail.getSize(),detail.getPrice(),detail.getUpdate(),detail.getUpdateName());
 	}
 
 }

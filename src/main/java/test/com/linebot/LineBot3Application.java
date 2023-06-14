@@ -33,7 +33,7 @@ import test.com.service.DetailService;
 @SpringBootApplication
 @ComponentScan(basePackageClasses = { DetailService.class })
 @EnableJpaRepositories("test.com.dao")
-@EntityScan("test.com.model") 
+@EntityScan("test.com.model")
 @RestController
 @LineMessageHandler
 public class LineBot3Application {
@@ -52,24 +52,24 @@ public class LineBot3Application {
 	@EventMapping
 	public void handle(MessageEvent<TextMessageContent> event) throws Exception {
 		String originalMessageText = event.getMessage().getText();
-		logger.info("Hello, Heroku log!");
-		// 範例：+飲料 甜度 冰塊 大小 金額
+		// 取得使用者資訊
+		String userId = event.getSource().getUserId();
+		UserProfileResponse userProfile;
+		userProfile = lineMessagingClient.getProfile(userId).get();
+		String userName = userProfile.getDisplayName();
+		logger.info("userId:" + userId + ",userName: " + userName);
 		if (originalMessageText.substring(0, 1).equals("+") && originalMessageText.length() > 1) {
-			// 取得使用者資訊
-			String userId = event.getSource().getUserId();
-			UserProfileResponse userProfile;
-			userProfile = lineMessagingClient.getProfile(userId).get();
-			String userName = userProfile.getDisplayName();
-			logger.info("userId:" + userId + ",userName: " + userName);
+			// 新增範例：+飲料 甜度 冰塊 大小 金額
 			logger.info("========新增飲料=========");
 			Message replyMessage = detailService.addDrink(userId, userName, originalMessageText);
 			logger.info("取得回傳字串：" + replyMessage);
 			reply(replyMessage, event.getReplyToken());
-		} else if (originalMessageText.equals("我誰")) {
-			Message replyMessage = detailService.handlePictureMessageEvent(event);
-			logger.info("回傳Ｍessage:" + replyMessage);
+		} else if (originalMessageText.substring(0, 1).equals("%") && originalMessageText.length() > 1) {
+			// 修改範例：%舊飲料 新飲料 甜度 冰塊 大小 金額
+			logger.info("========修改飲料=========");
+			Message replyMessage = detailService.updateDrink(userId, userName, originalMessageText);
+			logger.info("取得回傳字串：" + replyMessage);
 			reply(replyMessage, event.getReplyToken());
-			logger.info("======回傳圖片成功=======");
 		} else if (originalMessageText.substring(0, 1).equals("?") && originalMessageText.length() > 1) {
 			// 地址查詢：以？開頭並輸入地址
 			String address = originalMessageText.substring(1);
@@ -80,7 +80,6 @@ public class LineBot3Application {
 			if (!location.equals("X")) {
 				try {
 					FlexMessage flexMessage = detailService.handleNearLocationTemplate(event, location);
-					String userId = event.getSource().getUserId();
 					replyTemplet(flexMessage, userId);
 				} catch (Exception e) {
 					logger.info("取得附近店家失敗");
@@ -93,7 +92,11 @@ public class LineBot3Application {
 				TextMessage replyMessage = new TextMessage("查無附近店家地址");
 				reply(replyMessage, event.getReplyToken());
 			}
-
+		} else if (originalMessageText.equals("我誰")) {
+			Message replyMessage = detailService.handlePictureMessageEvent(event);
+			logger.info("回傳Ｍessage:" + replyMessage);
+			reply(replyMessage, event.getReplyToken());
+			logger.info("======回傳圖片成功=======");
 		} else {
 			logger.info("笑死");
 			detailService.handleTextMessageEvent(event);

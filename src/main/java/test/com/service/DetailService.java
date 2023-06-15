@@ -321,25 +321,24 @@ public class DetailService {
 		logger.info("進入SERVICCE method: removeDrink");
 		String[] str = originalMessageText.substring(1).split(" ");
 		// 檢核輸入格式
-		if (str.length != 2) {
-			logger.info("======新增飲料:空格位置錯誤=========");
-			TextMessage replyMessage = new TextMessage(userName + "，注意空格位置,請輸入『-飲料 訂單編號』");
+		if (str.length != 1) {
+			logger.info("======刪除飲料:輸入錯誤=========");
+			TextMessage replyMessage = new TextMessage(userName + "，注意空格位置,請輸入『-訂單編號』");
 			return replyMessage;
 		}
 		String number = "123456789";
-		String drink = str[0];
-		String idstr = str[1];
+		String idstr = str[0];
 		Long id;
-		logger.info("刪除飲料：" + drink + ",訂單編號：" + idstr);
+		logger.info("刪除訂單編號：" + idstr);
 		// 檢核輸入內容格式
 		if (!number.contains(idstr)) {
-			TextMessage replyMessage = new TextMessage(userName + "，訂單編號需為數字，請依排列順序輸入『-飲料 訂單編號』");
+			TextMessage replyMessage = new TextMessage(userName + "，訂單編號需為數字，請輸入『-訂單編號』");
 			return replyMessage;
 		} else {
 			id = Long.parseLong(idstr);
 		}
 		logger.info("========開始刪除飲料=======");
-		Detail returnDetail = removeDetail(id);
+		Detail returnDetail = removeDetail(id,userName);
 		logger.info("========回傳修改訊息=======");
 		String returnStr = "";
 		if (returnDetail!=null && returnDetail.getStatus().equals("0")) {
@@ -357,7 +356,7 @@ public class DetailService {
 	}
 
 	// 刪除DB(只做狀態修改)
-	public Detail removeDetail(Long id) {
+	public Detail removeDetail(Long id,String userName) {
 		Detail returnDetail = null;
 		logger.info("=====查詢需刪除資料 JPA======");
 		Optional<Detail> optionalDetail = detailDao.findById(id);
@@ -373,8 +372,8 @@ public class DetailService {
 				return oldDetail;	//回傳原始資料
 			}
 			// 舊資料需修改的欄位
-			oldDetail.setUpdate(null);
-			oldDetail.setUpdateName(null);
+			oldDetail.setUpdate(new Date());
+			oldDetail.setUpdateName(userName);
 			oldDetail.setStatus("0");	 // 0：無效，1-有效
 			logger.info("=====修改資料 JPA======");
 			returnDetail = detailDao.save(oldDetail);

@@ -3,7 +3,9 @@ package test.com.service;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -53,13 +55,6 @@ public class DetailService {
 
 	@Autowired
 	private DetailDao detailDao;
-
-	public Message handleTextMessageEvent(MessageEvent<TextMessageContent> event) {
-		logger.info("SUCCESS:笑死");
-		TextMessage replyMessage = new TextMessage("笑死");
-//		reply(replyMessage, event.getReplyToken());
-		return replyMessage;
-	}
 
 	public Message handlePictureMessageEvent(MessageEvent<TextMessageContent> event) throws URISyntaxException {
 		logger.info("SUCCESS:我瘋子");
@@ -202,7 +197,7 @@ public class DetailService {
 		// 檢核輸入格式
 		if (str.length != 5) {
 			logger.info("======新增飲料:空格位置錯誤=========");
-			TextMessage replyMessage = new TextMessage("@" + userId + "，注意空格位置,請輸入『+飲料 甜度 冰塊 大小 金額』");
+			TextMessage replyMessage = new TextMessage(userName + "，注意空格位置,請輸入『+飲料 甜度 冰塊 大小 金額』");
 			return replyMessage;
 		}
 		String drink = str[0];
@@ -215,7 +210,7 @@ public class DetailService {
 		// 檢核輸入內容格式
 		if (sugar.contains("冰") || sugar.contains("溫") || sugar.contains("熱") || ice.contains("糖")
 				|| ice.contains("甜")) {
-			TextMessage replyMessage = new TextMessage("@" + userId + "，請依排列順序輸入『+飲料 甜度 冰塊 大小 金額』");
+			TextMessage replyMessage = new TextMessage(userName + "，請依排列順序輸入『+飲料 甜度 冰塊 大小 金額』");
 			return replyMessage;
 		}
 		Detail detail = new Detail();
@@ -226,11 +221,11 @@ public class DetailService {
 		detail.setPrice(price);
 		detail.setUserName(userName);
 		detail.setInputdate(new Date());
-		detail.setStatus("0");
+		detail.setStatus("1"); // 0：無效，1-有效
 		logger.info("========開始新增飲料=======");
 		Detail returnDetail = insertDetail(detail);
 		logger.info("========回傳新增成功訊息=======");
-		TextMessage replyMessage = new TextMessage("@" + userId + "新增成功，訂單編號：" + returnDetail.getId());
+		TextMessage replyMessage = new TextMessage(userName + "新增成功，訂單編號：" + returnDetail.getId());
 		return replyMessage;
 	}
 
@@ -247,7 +242,7 @@ public class DetailService {
 		// 檢核輸入格式
 		if (str.length != 6) {
 			logger.info("======新增飲料:空格位置錯誤=========");
-			TextMessage replyMessage = new TextMessage("@" + userId + "，注意空格位置,請輸入『%飲料 甜度 冰塊 大小 金額 訂單編號』");
+			TextMessage replyMessage = new TextMessage(userName + "，注意空格位置,請輸入『%飲料 甜度 冰塊 大小 金額 訂單編號』");
 			return replyMessage;
 		}
 		String drink = str[0];
@@ -256,16 +251,26 @@ public class DetailService {
 		String size = str[3];
 		String pricestr = str[4];
 		String idstr = str[5];
-		int price = Integer.parseInt(pricestr);
-		Long id = Long.parseLong(idstr);
+		String number = "123456789";
+		int price;
+		Long id;
+		if (!number.contains(idstr) || !number.contains(pricestr)) {
+			TextMessage replyMessage = new TextMessage(userName + "金額、編號需為數字，請依排列順序輸入『%飲料 甜度 冰塊 大小 金額 訂單編號』");
+			return replyMessage;
+		} else {
+			price = Integer.parseInt(pricestr);
+			id = Long.parseLong(idstr);
+		}
+
 		logger.info(
 				"修改飲料：" + drink + ",甜度：" + sugar + ",冰塊：" + ice + ",大小：" + size + ",價錢：" + pricestr + ",訂單編號：" + idstr);
 		// 檢核輸入內容格式
 		if (sugar.contains("冰") || sugar.contains("溫") || sugar.contains("熱") || ice.contains("糖")
 				|| ice.contains("甜")) {
-			TextMessage replyMessage = new TextMessage("@" + userId + "，請依排列順序輸入『+飲料 甜度 冰塊 大小 金額』");
+			TextMessage replyMessage = new TextMessage(userName + "，請依排列順序輸入『%飲料 甜度 冰塊 大小 金額 訂單編號』");
 			return replyMessage;
 		}
+		// 修改欄位
 		Detail detail = new Detail();
 		detail.setDrink(drink);
 		detail.setSugar(sugar);
@@ -274,7 +279,7 @@ public class DetailService {
 		detail.setPrice(price);
 		detail.setUpdate(new Date());
 		detail.setUpdateName(userName);
-		detail.setStatus("0");
+		detail.setStatus("1"); // 0：無效，1-有效
 		detail.setId(id);
 		logger.info("========開始修改飲料=======");
 		Detail returnDetail = updateDetail(detail);
@@ -287,19 +292,19 @@ public class DetailService {
 			logger.info("========查無訂單編號=======");
 			returnStr = "查無訂單編號:" + id;
 		}
-		TextMessage replyMessage = new TextMessage("@" + userId + "，" + returnStr);
+		TextMessage replyMessage = new TextMessage(userName + "，" + returnStr);
 		return replyMessage;
 	}
 
 	// 修改DB
 	public Detail updateDetail(Detail detail) {
 		Detail returnDetail = null;
-		logger.info("=====查詢資料 JPA======");
+		logger.info("=====查詢需修改資料 JPA======");
 		Optional<Detail> optionalDetail = detailDao.findById(detail.getId());
 		if (optionalDetail.isPresent()) {
 			logger.info("撈出舊資料");
 			Detail oldDetail = optionalDetail.get();
-			//把須維持舊資料狀態的欄位寫入
+			// 維持舊資料的欄位
 			detail.setUserName(oldDetail.getUserName());
 			detail.setInputdate(oldDetail.getInputdate());
 			logger.info("=====修改資料 JPA======");
@@ -308,6 +313,74 @@ public class DetailService {
 			logger.info("=====查無訂單編號======");
 		}
 
+		return returnDetail;
+	}
+
+	// 刪除資料
+	public Message removeDrink(String userId, String userName, String originalMessageText) {
+		logger.info("進入SERVICCE method: removeDrink");
+		String[] str = originalMessageText.substring(1).split(" ");
+		// 檢核輸入格式
+		if (str.length != 2) {
+			logger.info("======新增飲料:空格位置錯誤=========");
+			TextMessage replyMessage = new TextMessage(userName + "，注意空格位置,請輸入『-飲料 訂單編號』");
+			return replyMessage;
+		}
+		String number = "123456789";
+		String drink = str[0];
+		String idstr = str[1];
+		Long id;
+		logger.info("刪除飲料：" + drink + ",訂單編號：" + idstr);
+		// 檢核輸入內容格式
+		if (!number.contains(idstr)) {
+			TextMessage replyMessage = new TextMessage(userName + "，訂單編號需為數字，請依排列順序輸入『-飲料 訂單編號』");
+			return replyMessage;
+		} else {
+			id = Long.parseLong(idstr);
+		}
+		logger.info("========開始刪除飲料=======");
+		Detail returnDetail = removeDetail(id);
+		logger.info("========回傳修改訊息=======");
+		String returnStr = "";
+		if (returnDetail!=null && returnDetail.getStatus().equals("0")) {
+			logger.info("========刪除成功=======");
+			returnStr = "編號:" + returnDetail.getId() + "刪除成功";
+		} else if(returnDetail!=null && returnDetail.getStatus().equals("1")){
+			logger.info("========不可刪除非當日訂單編號=======");
+			returnStr = "訂單編號:" + id +"，非當日訂單不可刪除";
+		}else{
+			logger.info("========查無訂單編號=======");
+			returnStr = "查無訂單編號:" + id;
+		}
+		TextMessage replyMessage = new TextMessage(userName + "，" + returnStr);
+		return replyMessage;
+	}
+
+	// 刪除DB(只做狀態修改)
+	public Detail removeDetail(Long id) {
+		Detail returnDetail = null;
+		logger.info("=====查詢需刪除資料 JPA======");
+		Optional<Detail> optionalDetail = detailDao.findById(id);
+		if (optionalDetail.isPresent()) {
+			logger.info("撈出舊資料");
+			Detail oldDetail = optionalDetail.get();
+			// 檢核是否與輸入日相同
+			DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
+			String inputDateStr = dateFormat.format(oldDetail.getInputdate());
+			String upDateStr = dateFormat.format(new Date());
+			logger.info("寫入日期:"+inputDateStr+",修改日期:"+upDateStr);
+			if(inputDateStr.compareTo(upDateStr)!=0) {
+				return oldDetail;	//回傳原始資料
+			}
+			// 舊資料需修改的欄位
+			oldDetail.setUpdate(null);
+			oldDetail.setUpdateName(null);
+			oldDetail.setStatus("0");	 // 0：無效，1-有效
+			logger.info("=====修改資料 JPA======");
+			returnDetail = detailDao.save(oldDetail);
+		} else {
+			logger.info("=====查無訂單編號======");
+		}
 		return returnDetail;
 	}
 

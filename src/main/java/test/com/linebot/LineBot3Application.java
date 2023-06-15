@@ -65,12 +65,18 @@ public class LineBot3Application {
 			logger.info("取得回傳字串：" + replyMessage);
 			reply(replyMessage, event.getReplyToken());
 		} else if (originalMessageText.substring(0, 1).equals("%") && originalMessageText.length() > 1) {
-			// 修改範例：%新飲料 甜度 冰塊 大小 金額 訂單編號(line bot新增後回傳)
+			// 修改範例：%飲料 甜度 冰塊 大小 金額 訂單編號(line bot新增後回傳)
 			logger.info("========修改飲料=========");
 			Message replyMessage = detailService.updateDrink(userId, userName, originalMessageText);
 			logger.info("取得回傳字串：" + replyMessage);
 			reply(replyMessage, event.getReplyToken());
-		} else if (originalMessageText.substring(0, 1).equals("?") && originalMessageText.length() > 1) {
+		}else if (originalMessageText.substring(0, 1).equals("-") && originalMessageText.length() > 1) {
+			// 刪除範例：-飲料 甜度 冰塊 大小 金額 訂單編號(line bot新增後回傳)
+			logger.info("========刪除飲料=========");
+			Message replyMessage = detailService.removeDrink(userId, userName, originalMessageText);
+			logger.info("取得回傳字串：" + replyMessage);
+			reply(replyMessage, event.getReplyToken());
+		}else if (originalMessageText.substring(0, 1).equals("?") && originalMessageText.length() > 1) {
 			// 地址查詢：以？開頭並輸入地址
 			String address = originalMessageText.substring(1);
 			logger.info("輸入地址:" + address);
@@ -99,7 +105,8 @@ public class LineBot3Application {
 			logger.info("======回傳圖片成功=======");
 		} else {
 			logger.info("笑死");
-			detailService.handleTextMessageEvent(event);
+			TextMessage replyMessage = new TextMessage("笑死");
+			reply(replyMessage, event.getReplyToken());
 		}
 	}
 

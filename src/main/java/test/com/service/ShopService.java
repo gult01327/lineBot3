@@ -102,9 +102,6 @@ public class ShopService {
 		List<PlacesSearchResult> results = Arrays.asList(response.results);
 		int maxResults = Math.min(results.size(), 5); // 查詢5筆
 		List<Bubble> flexBubbles = new ArrayList<>();
-		Date date = new Date();
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-		String today = dateFormat.format(date);
 		for (int i = 0; i < maxResults; i++) {
 			PlacesSearchResult result = results.get(i);
 			String name = result.name; // 店名
@@ -169,7 +166,7 @@ public class ShopService {
 
 			// 查詢DB是否已存資料(今日)
 			logger.info("查詢今日是否已錄入店家");
-			Shop returnShop = shopDao.findByinputDate(placeId, today);
+			Shop returnShop = shopDao.findByinputDate(placeId, new Date());
 			if (returnShop == null) {
 				// 資料存入DB
 				Shop shop = new Shop();

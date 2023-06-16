@@ -9,6 +9,6 @@ import test.com.model.Shop;
 
 @Repository
 public interface ShopDao extends JpaRepository<Shop, Long>{
-	 @Query("SELECT s FROM shop_order s WHERE s.shop_id = :shopId and s.input_date = :inputDate")
+	@Query("SELECT s FROM Shop s WHERE s.shopId = :shopId and s.inputDate = :inputDate")
 	 public Shop findByinputDate(@Param("shopId") String shopId,@Param("inputDate") String inputDate);
 }

@@ -32,6 +32,7 @@ import com.google.maps.model.PlacesSearchResult;
 import com.linecorp.bot.model.action.Action;
 import com.linecorp.bot.model.action.URIAction;
 import com.linecorp.bot.model.event.MessageEvent;
+import com.linecorp.bot.model.event.message.LocationMessageContent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
 import com.linecorp.bot.model.message.FlexMessage;
 import com.linecorp.bot.model.message.ImageMessage;
@@ -56,6 +57,7 @@ public class DetailService {
 	@Autowired
 	private DetailDao detailDao;
 
+	// 回傳圖片練習
 	public Message handlePictureMessageEvent(MessageEvent<TextMessageContent> event) throws URISyntaxException {
 		logger.info("SUCCESS:我瘋子");
 		URI originalContentUrl = new URI(
@@ -65,129 +67,6 @@ public class DetailService {
 		Message replyMessage = new ImageMessage(originalContentUrl, previewimageUrl);
 //		reply(replyMessage, event.getReplyToken());
 		return replyMessage;
-	}
-
-	public String getGoogleMapLocation(String address) {
-		logger.info("進入SERVICCE method: getGoogleMapLocation");
-		// google map金鑰
-		String GOOGLE_API_KEY = "AIzaSyBGQRnDgWX0c4WJbUNiBxU6MbOvDFPD_QA";
-		GeoApiContext context = new GeoApiContext.Builder().apiKey(GOOGLE_API_KEY).build();
-		try {
-			GeocodingResult[] results = GeocodingApi.geocode(context, address).await();
-			if (results.length > 0) {
-				// 取第一個结果的經緯度
-				LatLng location = results[0].geometry.location;
-				logger.info("取得輸入地址緯度: " + location.lat);
-				logger.info("取得輸入地址經度: " + location.lng);
-				return location.lat + "," + location.lng;
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			logger.info("獲取輸入地址位置訊息錯誤");
-			return "X";
-		}
-		logger.info("獲取輸入地址位置訊息錯誤");
-		return "X";
-
-	}
-
-	public FlexMessage handleNearLocationTemplate(MessageEvent<TextMessageContent> event, String location)
-			throws Exception {
-		logger.info("進入SERVICCE method: handleNearLocationTemplate");
-//		String LINE_CHANNEL_ACCESS_TOKEN = "u2559vPjHa8bDO7hrn0C232jQHdcC2NG68Fo6bGl7VRxDc36eT7w74pWlM0SzbIsCvxEKPJa7byGFX9KIOGDYz5TUFoYnig574mtiCFY5NF3S73DpPstr8rmYejYCDpm5QvFgNZL8mRwlhHiykrzNQdB04t89/1O/w1cDnyilFU=";
-		// 初始化Line Messaging Client
-//		LineMessagingClientBuilder builder = LineMessagingClient.builder(LINE_CHANNEL_ACCESS_TOKEN);
-//		LineMessagingClient lineMessagingClient = builder.build();
-
-		String GOOGLE_MAPS_API_KEY = "AIzaSyBGQRnDgWX0c4WJbUNiBxU6MbOvDFPD_QA";
-		// 建立Google Maps API客户端
-		GeoApiContext context = new GeoApiContext.Builder().apiKey(GOOGLE_MAPS_API_KEY).build();
-
-		String[] latlng = location.split(",");
-		// 查詢附近飲料店
-		double latitude = Double.parseDouble(latlng[0]); // 使用者的緯度
-		double longitude = Double.parseDouble(latlng[1]); // 使用者的經度
-		int radius = 1000; // 搜索半徑（單位：米）
-		String type = "飲料店"; // 查詢關鍵键字
-
-		NearbySearchRequest request = PlacesApi.nearbySearchQuery(context, new LatLng(latitude, longitude))
-				.radius(radius).keyword(type);
-
-		PlacesSearchResponse response = request.await();
-
-		// 建立Flex Message列表
-		List<PlacesSearchResult> results = Arrays.asList(response.results);
-		int maxResults = Math.min(results.size(), 5); // 查詢5筆
-		List<Bubble> flexBubbles = new ArrayList<>();
-
-		for (int i = 0; i < maxResults; i++) {
-			PlacesSearchResult result = results.get(i);
-			String name = result.name;
-			String address = result.vicinity;
-			double resultLatitude = result.geometry.location.lat; // 緯度
-			double resultLongitude = result.geometry.location.lng; // 經度
-			URI photoUrl = new URI(
-					"https://media.nownews.com/nn_media/thumbnail/2019/10/1570089924-27a9b9c9d7facd3422fe4610dd8ebe42-696x386.png");
-
-			// 點擊圖片觸發的action
-			String placeId = result.placeId; // 取得店家ID
-			String encodedPlaceId = URLEncoder.encode(placeId, "UTF-8");
-			String mapWebUrl = "https://www.google.com/maps/place/?q=place_id:" + encodedPlaceId;
-
-			// 獲取店家資訊
-			PlaceDetails placeDetails = PlacesApi.placeDetails(context, placeId).language("zh-TW") // 指定語言為中文
-					.await();
-			// 獲取評分星數
-			double rating = placeDetails.rating;
-			// 格式化評分數到小數點第一位
-			String formattedRating = new DecimalFormat("#.#").format(rating);
-			String starIcon = "★";
-			// 獲取中文地址
-			String chineseAddress = placeDetails.formattedAddress;
-			// 取得店家的營業時間
-			String todayOpeningHours = null;
-			if (placeDetails.openingHours != null && placeDetails.openingHours.weekdayText != null) {
-				LocalDate currentDate = LocalDate.now();
-				DayOfWeek currentDayOfWeek = currentDate.getDayOfWeek();
-				String[] weekdayText = placeDetails.openingHours.weekdayText;
-
-				// 判斷今天是星期幾
-				int dayOfWeekIndex = currentDayOfWeek.getValue() - 1; // 假設 API 中星期一為第一個元素，而 Java DayOfWeek 中星期一為第一天
-
-				if (dayOfWeekIndex >= 0 && dayOfWeekIndex < weekdayText.length) {
-					String todayHours = weekdayText[dayOfWeekIndex];
-					todayOpeningHours = todayHours.substring(todayHours.indexOf(":") + 1).trim();
-				}
-			}
-
-			// 點擊圖片觸發的action
-			Action action = new URIAction("Open Map", new URI(mapWebUrl), null);
-
-			// 建立訊息模板
-			Bubble bubble = Bubble.builder()
-					.body(Box.builder().layout(FlexLayout.VERTICAL).contents(Arrays.asList(
-							Text.builder().text(name).weight(Text.TextWeight.BOLD).size(FlexFontSize.LG)
-									.margin(FlexMarginSize.NONE).build(),
-							Text.builder().text("評分: " + formattedRating + starIcon).size(FlexFontSize.SM).wrap(true)
-									.margin(FlexMarginSize.MD).build(),
-							Text.builder().text("地址: " + chineseAddress).size(FlexFontSize.SM).wrap(true)
-									.margin(FlexMarginSize.MD).build(),
-							Text.builder().text("營業時間: " + todayOpeningHours).size(FlexFontSize.SM).wrap(true)
-									.margin(FlexMarginSize.MD).build(),
-							Image.builder().url(photoUrl).size(Image.ImageSize.FULL_WIDTH)
-									.aspectMode(Image.ImageAspectMode.Cover).aspectRatio(Image.ImageAspectRatio.R1TO1)
-									.margin(FlexMarginSize.MD).action(action) // 設置點擊操作
-									.build()))
-							.build())
-					.build();
-
-			flexBubbles.add(bubble);
-		}
-
-		// 創建 FlexMessage
-		FlexMessage flexMessage = FlexMessage.builder().altText("Nearby Drink Shops")
-				.contents(Carousel.builder().contents(flexBubbles).build()).build();
-		return flexMessage;
 	}
 
 	// 新增飲料
@@ -338,16 +217,16 @@ public class DetailService {
 			id = Long.parseLong(idstr);
 		}
 		logger.info("========開始刪除飲料=======");
-		Detail returnDetail = removeDetail(id,userName);
+		Detail returnDetail = removeDetail(id, userName);
 		logger.info("========回傳修改訊息=======");
 		String returnStr = "";
-		if (returnDetail!=null && returnDetail.getStatus().equals("0")) {
+		if (returnDetail != null && returnDetail.getStatus().equals("0")) {
 			logger.info("========刪除成功=======");
 			returnStr = "編號:" + returnDetail.getId() + "刪除成功";
-		} else if(returnDetail!=null && returnDetail.getStatus().equals("1")){
+		} else if (returnDetail != null && returnDetail.getStatus().equals("1")) {
 			logger.info("========不可刪除非當日訂單編號=======");
-			returnStr = "訂單編號:" + id +"，非當日訂單不可刪除";
-		}else{
+			returnStr = "訂單編號:" + id + "，非當日訂單不可刪除";
+		} else {
 			logger.info("========查無訂單編號=======");
 			returnStr = "查無訂單編號:" + id;
 		}
@@ -356,7 +235,7 @@ public class DetailService {
 	}
 
 	// 刪除DB(只做狀態修改)
-	public Detail removeDetail(Long id,String userName) {
+	public Detail removeDetail(Long id, String userName) {
 		Detail returnDetail = null;
 		logger.info("=====查詢需刪除資料 JPA======");
 		Optional<Detail> optionalDetail = detailDao.findById(id);
@@ -367,14 +246,14 @@ public class DetailService {
 			DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
 			String inputDateStr = dateFormat.format(oldDetail.getInputdate());
 			String upDateStr = dateFormat.format(new Date());
-			logger.info("寫入日期:"+inputDateStr+",修改日期:"+upDateStr);
-			if(inputDateStr.compareTo(upDateStr)!=0) {
-				return oldDetail;	//回傳原始資料
+			logger.info("寫入日期:" + inputDateStr + ",修改日期:" + upDateStr);
+			if (inputDateStr.compareTo(upDateStr) != 0) {
+				return oldDetail; // 回傳原始資料
 			}
 			// 舊資料需修改的欄位
 			oldDetail.setUpdate(new Date());
 			oldDetail.setUpdateName(userName);
-			oldDetail.setStatus("0");	 // 0：無效，1-有效
+			oldDetail.setStatus("0"); // 0：無效，1-有效
 			logger.info("=====修改資料 JPA======");
 			returnDetail = detailDao.save(oldDetail);
 		} else {

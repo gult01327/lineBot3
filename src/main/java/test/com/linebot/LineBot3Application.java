@@ -2,6 +2,7 @@ package test.com.linebot;
 
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +12,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.linecorp.bot.client.LineMessagingClient;
@@ -18,6 +20,7 @@ import com.linecorp.bot.model.PushMessage;
 import com.linecorp.bot.model.ReplyMessage;
 import com.linecorp.bot.model.event.Event;
 import com.linecorp.bot.model.event.MessageEvent;
+import com.linecorp.bot.model.event.message.LocationMessageContent;
 import com.linecorp.bot.model.event.message.StickerMessageContent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
 import com.linecorp.bot.model.message.FlexMessage;
@@ -29,12 +32,14 @@ import com.linecorp.bot.spring.boot.annotation.EventMapping;
 import com.linecorp.bot.spring.boot.annotation.LineMessageHandler;
 
 import test.com.service.DetailService;
+import test.com.service.ShopService;
 
 @SpringBootApplication
-@ComponentScan(basePackageClasses = { DetailService.class })
+@ComponentScan("test.com.service ")
 @EnableJpaRepositories("test.com.dao")
 @EntityScan("test.com.model")
 @RestController
+@RequestMapping("/lineBot")
 @LineMessageHandler
 public class LineBot3Application {
 	private static final Logger logger = LoggerFactory.getLogger(LineBot3Application.class);
@@ -44,6 +49,9 @@ public class LineBot3Application {
 
 	@Autowired
 	private DetailService detailService;
+	
+	@Autowired
+	private ShopService shopService;
 
 	public static void main(String[] args) {
 		SpringApplication.run(LineBot3Application.class, args);
@@ -51,13 +59,13 @@ public class LineBot3Application {
 
 	@EventMapping
 	public void handle(MessageEvent<TextMessageContent> event) throws Exception {
+		//收到文字訊息
 		String originalMessageText = event.getMessage().getText();
 		// 取得使用者資訊
 		String userId = event.getSource().getUserId();
-		UserProfileResponse userProfile;
-		userProfile = lineMessagingClient.getProfile(userId).get();
+		UserProfileResponse userProfile = lineMessagingClient.getProfile(userId).get();
 		String userName = userProfile.getDisplayName();
-		logger.info("userId:" + userId + ",userName: " + userName);
+		logger.info("userId:" + userId + ",userName: " + userName+",收到文字訊息:"+originalMessageText);
 		if (originalMessageText.substring(0, 1).equals("+") && originalMessageText.length() > 1) {
 			// 新增範例：+飲料 甜度 冰塊 大小 金額
 			logger.info("========新增飲料=========");
@@ -70,22 +78,22 @@ public class LineBot3Application {
 			Message replyMessage = detailService.updateDrink(userId, userName, originalMessageText);
 			logger.info("取得回傳字串：" + replyMessage);
 			reply(replyMessage, event.getReplyToken());
-		}else if (originalMessageText.substring(0, 1).equals("-") && originalMessageText.length() > 1) {
+		} else if (originalMessageText.substring(0, 1).equals("-") && originalMessageText.length() > 1) {
 			// 刪除範例：-訂單編號(line bot新增後回傳)
 			logger.info("========刪除飲料=========");
 			Message replyMessage = detailService.removeDrink(userId, userName, originalMessageText);
 			logger.info("取得回傳字串：" + replyMessage);
 			reply(replyMessage, event.getReplyToken());
-		}else if (originalMessageText.substring(0, 1).equals("?") && originalMessageText.length() > 1) {
+		} else if (originalMessageText.substring(0, 1).equals("?") && originalMessageText.length() > 1) {
 			// 地址查詢：以？開頭並輸入地址
 			String address = originalMessageText.substring(1);
 			logger.info("輸入地址:" + address);
 			// 取得地址緯度、經度
-			String location = detailService.getGoogleMapLocation(address);
+			String location = shopService.getGoogleMapLocation(address);
 			logger.info("取得地址緯度、經度:" + location);
 			if (!location.equals("X")) {
 				try {
-					FlexMessage flexMessage = detailService.handleNearLocationTemplate(event, location);
+					FlexMessage flexMessage = shopService.handleNearLocationTemplate(event, location,userName);
 					replyTemplet(flexMessage, userId);
 				} catch (Exception e) {
 					logger.info("取得附近店家失敗");
@@ -139,4 +147,27 @@ public class LineBot3Application {
 		logger.info("event: " + event);
 	}
 
+	@EventMapping
+	public void handleLocationMessage(MessageEvent<LocationMessageContent> event) throws Exception{
+		// 收到位置
+		logger.info("收到位置訊息,method: handleLocationMessage");
+		String userId = event.getSource().getUserId();
+		LocationMessageContent locationMessage = event.getMessage();
+		double latitude = locationMessage.getLatitude(); // 取得緯度
+		double longitude = locationMessage.getLongitude(); // 取得經度
+		logger.info("取得經度" + latitude + ",取得緯度: " + longitude);
+		//取user資訊
+		UserProfileResponse userProfile = lineMessagingClient.getProfile(userId).get();
+		String userName = userProfile.getDisplayName();
+		String location = Double.toString(latitude)+","+Double.toString(longitude);
+		try {
+			FlexMessage flexMessage = shopService.NearLocationTemplate(event, location,userName);
+			replyTemplet(flexMessage, userId);
+		} catch (Exception e) {
+			logger.info("取得附近店家失敗");
+			e.printStackTrace();
+			TextMessage replyMessage = new TextMessage("取得附近店家失敗");
+			reply(replyMessage, event.getReplyToken());
+		}
+	}
 }

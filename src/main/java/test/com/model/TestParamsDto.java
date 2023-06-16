@@ -1,4 +1,4 @@
-package test.com.linebot;
+package test.com.model;
 
 public class TestParamsDto {
 	

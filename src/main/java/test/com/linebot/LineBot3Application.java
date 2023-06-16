@@ -13,6 +13,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.linecorp.bot.client.LineMessagingClient;
@@ -26,11 +27,14 @@ import com.linecorp.bot.model.event.message.TextMessageContent;
 import com.linecorp.bot.model.message.FlexMessage;
 import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.StickerMessage;
+import com.linecorp.bot.model.message.TemplateMessage;
 import com.linecorp.bot.model.message.TextMessage;
+import com.linecorp.bot.model.message.template.ButtonsTemplate;
 import com.linecorp.bot.model.profile.UserProfileResponse;
 import com.linecorp.bot.spring.boot.annotation.EventMapping;
 import com.linecorp.bot.spring.boot.annotation.LineMessageHandler;
 
+import test.com.model.Shop;
 import test.com.service.DetailService;
 import test.com.service.ShopService;
 
@@ -49,7 +53,7 @@ public class LineBot3Application {
 
 	@Autowired
 	private DetailService detailService;
-	
+
 	@Autowired
 	private ShopService shopService;
 
@@ -59,13 +63,13 @@ public class LineBot3Application {
 
 	@EventMapping
 	public void handle(MessageEvent<TextMessageContent> event) throws Exception {
-		//收到文字訊息
+		// 收到文字訊息
 		String originalMessageText = event.getMessage().getText();
 		// 取得使用者資訊
 		String userId = event.getSource().getUserId();
 		UserProfileResponse userProfile = lineMessagingClient.getProfile(userId).get();
 		String userName = userProfile.getDisplayName();
-		logger.info("userId:" + userId + ",userName: " + userName+",收到文字訊息:"+originalMessageText);
+		logger.info("userId:" + userId + ",userName: " + userName + ",收到文字訊息:" + originalMessageText);
 		if (originalMessageText.substring(0, 1).equals("+") && originalMessageText.length() > 1) {
 			// 新增範例：+飲料 甜度 冰塊 大小 金額
 			logger.info("========新增飲料=========");
@@ -93,7 +97,7 @@ public class LineBot3Application {
 			logger.info("取得地址緯度、經度:" + location);
 			if (!location.equals("X")) {
 				try {
-					FlexMessage flexMessage = shopService.handleNearLocationTemplate(event, location,userName);
+					FlexMessage flexMessage = shopService.handleNearLocationTemplate(event, location, userName);
 					replyTemplet(flexMessage, userId);
 				} catch (Exception e) {
 					logger.info("取得附近店家失敗");
@@ -111,6 +115,28 @@ public class LineBot3Application {
 			logger.info("回傳Ｍessage:" + replyMessage);
 			reply(replyMessage, event.getReplyToken());
 			logger.info("======回傳圖片成功=======");
+		} else if (originalMessageText.equals("訂單查詢")) {
+			String order = detailService.checkOrder();
+			logger.info("回傳字串:" + order);
+			TextMessage replyMessage = new TextMessage(order);
+			reply(replyMessage, event.getReplyToken());
+		} else if (originalMessageText.equals("訂單結單")) {
+			// 跳出今日資料庫存入的店家
+			ButtonsTemplate buttonsTemplate = shopService.getShopTemplate(event);
+			if (buttonsTemplate != null) {
+				// 创建 Template Message
+				TemplateMessage templateMessage = new TemplateMessage("Buttons Template", buttonsTemplate);
+				reply(templateMessage, event.getReplyToken());
+			} else if (buttonsTemplate.getText().equals("已結單")) {
+				String orderShop = shopService.checkOrder();
+				String orderDetail = detailService.checkOrder();
+				logger.info("已結單回傳字串:" + orderShop + orderDetail);
+				TextMessage replyMessage = new TextMessage(orderShop + orderDetail);
+				reply(replyMessage, event.getReplyToken());
+			} else {
+				TextMessage replyMessage = new TextMessage("尚未存入店家資料，請輸入?地址或分享位置資訊");
+				reply(replyMessage, event.getReplyToken());
+			}
 		}
 	}
 
@@ -148,7 +174,7 @@ public class LineBot3Application {
 	}
 
 	@EventMapping
-	public void handleLocationMessage(MessageEvent<LocationMessageContent> event) throws Exception{
+	public void handleLocationMessage(MessageEvent<LocationMessageContent> event) throws Exception {
 		// 收到位置
 		logger.info("收到位置訊息,method: handleLocationMessage");
 		String userId = event.getSource().getUserId();
@@ -156,12 +182,12 @@ public class LineBot3Application {
 		double latitude = locationMessage.getLatitude(); // 取得緯度
 		double longitude = locationMessage.getLongitude(); // 取得經度
 		logger.info("取得經度" + latitude + ",取得緯度: " + longitude);
-		//取user資訊
+		// 取user資訊
 		UserProfileResponse userProfile = lineMessagingClient.getProfile(userId).get();
 		String userName = userProfile.getDisplayName();
-		String location = Double.toString(latitude)+","+Double.toString(longitude);
+		String location = Double.toString(latitude) + "," + Double.toString(longitude);
 		try {
-			FlexMessage flexMessage = shopService.NearLocationTemplate(event, location,userName);
+			FlexMessage flexMessage = shopService.NearLocationTemplate(event, location, userName);
 			replyTemplet(flexMessage, userId);
 		} catch (Exception e) {
 			logger.info("取得附近店家失敗");
@@ -169,5 +195,23 @@ public class LineBot3Application {
 			TextMessage replyMessage = new TextMessage("取得附近店家失敗");
 			reply(replyMessage, event.getReplyToken());
 		}
+	}
+
+	// 結單時點選店家按鈕回傳
+	@RequestMapping("/callback")
+	public String handleCallback(@RequestParam("data") String data) {
+		logger.info("按鈕回傳取得data：" + data);
+		String[] parts = data.split("\\|");
+		if (parts.length == 2 && parts[0].equals("SAVE_SHOP")) {
+			String id = parts[1];
+			logger.info("點選店家編碼：" + id);
+			Shop returnShop = shopService.saveShopStatus(id);
+			if (returnShop != null) {
+				logger.info("店家編碼：" + id + "狀態修改成功");
+			} else {
+				logger.info("店家編碼：" + id + "狀態修改失敗");
+			}
+		}
+		return "結單!!!";
 	}
 }

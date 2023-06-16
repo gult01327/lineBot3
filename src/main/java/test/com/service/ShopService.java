@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +27,8 @@ import com.google.maps.model.PlaceDetails;
 import com.google.maps.model.PlacesSearchResponse;
 import com.google.maps.model.PlacesSearchResult;
 import com.linecorp.bot.model.action.Action;
+import com.linecorp.bot.model.action.MessageAction;
+import com.linecorp.bot.model.action.PostbackAction;
 import com.linecorp.bot.model.action.URIAction;
 import com.linecorp.bot.model.event.MessageEvent;
 import com.linecorp.bot.model.event.message.LocationMessageContent;
@@ -39,6 +42,7 @@ import com.linecorp.bot.model.message.flex.container.Carousel;
 import com.linecorp.bot.model.message.flex.unit.FlexFontSize;
 import com.linecorp.bot.model.message.flex.unit.FlexLayout;
 import com.linecorp.bot.model.message.flex.unit.FlexMarginSize;
+import com.linecorp.bot.model.message.template.ButtonsTemplate;
 
 import test.com.dao.ShopDao;
 import test.com.model.Shop;
@@ -166,7 +170,7 @@ public class ShopService {
 
 			// 查詢DB是否已存資料(今日)
 			logger.info("查詢今日是否已錄入店家");
-			Shop returnShop = shopDao.findByinputDate(placeId, new Date());
+			Shop returnShop = shopDao.findByShopIdInputDate(placeId, new Date());
 			if (returnShop == null) {
 				// 資料存入DB
 				Shop shop = new Shop();
@@ -177,6 +181,8 @@ public class ShopService {
 				shop.setOrderStatus("0");
 				logger.info("今日尚未錄入店家，準備儲存至資料庫");
 				shopDao.save(shop);
+			} else {
+				logger.info("今日已錄入店家，不儲存");
 			}
 		}
 		// 創建 FlexMessage
@@ -272,12 +278,89 @@ public class ShopService {
 					.build();
 
 			flexBubbles.add(bubble);
-		}
 
+			// 查詢DB是否已存資料(今日)
+			logger.info("查詢今日是否已錄入店家");
+			Shop returnShop = shopDao.findByShopIdInputDate(placeId, new Date());
+			if (returnShop == null) {
+				// 資料存入DB
+				Shop shop = new Shop();
+				shop.setShopName(name);
+				shop.setShopId(placeId);
+				shop.setInputDate(new Date());
+				shop.setInputName(userName);
+				shop.setOrderStatus("0");
+				logger.info("今日尚未錄入店家，準備儲存至資料庫");
+				shopDao.save(shop);
+			} else {
+				logger.info("今日已錄入店家，不儲存");
+			}
+		}
 		// 創建 FlexMessage
 		FlexMessage flexMessage = FlexMessage.builder().altText("Nearby Drink Shops")
 				.contents(Carousel.builder().contents(flexBubbles).build()).build();
 		return flexMessage;
 	}
 
+	public ButtonsTemplate getShopTemplate(MessageEvent<TextMessageContent> event) throws Exception {
+		List<Action> actions = new ArrayList<>();
+		logger.info("查詢訂單：查詢今日存入的店家是否已結單");
+		Shop shopOrder = shopDao.findByStatusInputDate(new Date());
+		if (shopOrder != null) {
+			logger.info("=======今日已結單======");
+			actions.add(new PostbackAction(shopOrder.getShopName(), "SAVE_SHOP|Order"));
+			ButtonsTemplate buttonsTemplate = new ButtonsTemplate(null, // thumbnailImageUrl
+					null, // title
+					"已結單", // text
+					actions // actions
+			);
+			return buttonsTemplate;
+		}
+		List<Shop> shopList = shopDao.findByinputDate(new Date());
+		if (shopList == null) {
+			logger.info("查詢訂單：查無店家");
+			return null;
+		}
+		// 創建 Buttons Template
+
+		for (int i = 0; i < shopList.size(); i++) {
+			String shopName = shopList.get(i).getShopName();
+			Long id = shopList.get(i).getId();
+			logger.info("店名：" + shopName + "編碼：" + id);
+			actions.add(new PostbackAction(shopName, "SAVE_SHOP|" + id));
+		}
+		// 創建 Buttons Template
+		ButtonsTemplate buttonsTemplate = new ButtonsTemplate(null, // thumbnailImageUrl
+				null, // title
+				"請選擇店家", // text
+				actions // actions
+		);
+		return buttonsTemplate;
+	}
+
+	public Shop saveShopStatus(String id) {
+		logger.info("=====結單修改店家狀態=====");
+		long num = Long.parseLong(id);
+		Shop Oldshop = null;
+		Optional<Shop> shopOptional = shopDao.findById(num);
+		if (shopOptional.isPresent()) {
+			logger.info("撈出舊資料");
+			Oldshop = shopOptional.get();
+			Oldshop.setOrderStatus("1");
+		}
+		return Oldshop;
+
+	}
+
+	// 確認結單資料
+	public String checkOrder() {
+		logger.info("=====結單查詢shop_order=====");
+		String order = "";
+		Date today = new Date();
+		Shop shop = shopDao.findByStatusInputDate(today);
+		if (shop != null) {
+			order = "<" + shop.getShopName() + ">" + "\n";
+		}
+		return order;
+	}
 }

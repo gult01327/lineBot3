@@ -262,4 +262,25 @@ public class DetailService {
 		return returnDetail;
 	}
 
+	// 查詢訂單
+	public String checkOrder() {
+		logger.info("=====訂單查詢detail_order=====");
+		String order = "";
+		Date today = new Date();
+		List<Detail> detailList = detailDao.findByinputDate(today);
+		if (detailList != null) {
+			for (int i = 0; i < detailList.size(); i++) {
+				String userName = detailList.get(i).getUserName();
+				String drink = detailList.get(i).getDrink();
+				String sugar = detailList.get(i).getSugar();
+				String ice = detailList.get(i).getIce();
+				String size = detailList.get(i).getSize();
+				int price = detailList.get(i).getPrice();
+				order = userName + ",飲料:" + drink + ",甜度:" + sugar + ",冰塊:" + ice + " (" + size + "),金額:" + price
+						+ "\n";
+			}
+		}
+		return order;
+	}
+
 }

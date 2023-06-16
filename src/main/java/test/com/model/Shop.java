@@ -4,6 +4,8 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -11,9 +13,11 @@ import javax.persistence.Table;
 @Table(name = "shop_order")
 public class Shop {
 
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 	@Column(name = "shop_name")
 	private String shopName;
-	@Id
 	@Column(name = "shop_id")
 	private String shopId;
 	@Column(name = "input_date")
@@ -22,8 +26,14 @@ public class Shop {
 	private String inputName;
 	@Column(name = "order_status")
 	private String orderStatus;
-	@Column(name = "order_name")
-	private String orderName;
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
 
 	public String getShopName() {
 		return shopName;
@@ -63,14 +73,6 @@ public class Shop {
 
 	public void setOrderStatus(String orderStatus) {
 		this.orderStatus = orderStatus;
-	}
-
-	public String getOrderName() {
-		return orderName;
-	}
-
-	public void setOrderName(String orderName) {
-		this.orderName = orderName;
 	}
 
 }

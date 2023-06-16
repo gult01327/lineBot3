@@ -3,8 +3,11 @@ package test.com.service;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.chrono.ChronoLocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -46,7 +49,7 @@ import test.com.model.Shop;
 @Service
 public class ShopService {
 	private static final Logger logger = LoggerFactory.getLogger(ShopService.class);
-	
+
 	@Autowired
 	private ShopDao shopDao;
 
@@ -102,16 +105,13 @@ public class ShopService {
 		List<PlacesSearchResult> results = Arrays.asList(response.results);
 		int maxResults = Math.min(results.size(), 5); // 查詢5筆
 		List<Bubble> flexBubbles = new ArrayList<>();
+		Date date = new Date();
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		String today = dateFormat.format(date);
 		for (int i = 0; i < maxResults; i++) {
 			PlacesSearchResult result = results.get(i);
 			String name = result.name; // 店名
-			// 資料放入list
-			Shop shop = new Shop();
-			shop.setShopName(name);
-			shop.setInputDate(new Date());
-			shop.setInputName(userName);
-			shop.setOrderStatus("0");
-			shopDao.save(shop);
+
 			// 設定圖片
 			URI photoUrl = new URI(
 					"https://media.nownews.com/nn_media/thumbnail/2019/10/1570089924-27a9b9c9d7facd3422fe4610dd8ebe42-696x386.png");
@@ -169,6 +169,21 @@ public class ShopService {
 					.build();
 
 			flexBubbles.add(bubble);
+
+			// 查詢DB是否已存資料(今日)
+			logger.info("查詢今日是否已錄入店家");
+			Shop returnShop = shopDao.findByinputDate(placeId, today);
+			if (returnShop == null) {
+				// 資料存入DB
+				Shop shop = new Shop();
+				shop.setShopName(name);
+				shop.setShopId(placeId);
+				shop.setInputDate(new Date());
+				shop.setInputName(userName);
+				shop.setOrderStatus("0");
+				logger.info("今日尚未錄入店家，準備儲存至資料庫");
+				shopDao.save(shop);
+			}
 		}
 		// 創建 FlexMessage
 		FlexMessage flexMessage = FlexMessage.builder().altText("Nearby Drink Shops")
@@ -176,8 +191,8 @@ public class ShopService {
 		return flexMessage;
 	}
 
-	public FlexMessage NearLocationTemplate(MessageEvent<LocationMessageContent> event, String location,String userName)
-			throws Exception {
+	public FlexMessage NearLocationTemplate(MessageEvent<LocationMessageContent> event, String location,
+			String userName) throws Exception {
 		logger.info("進入SERVICCE method: NearLocationTemplate");
 
 		String GOOGLE_MAPS_API_KEY = "AIzaSyBGQRnDgWX0c4WJbUNiBxU6MbOvDFPD_QA";

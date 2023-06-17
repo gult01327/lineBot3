@@ -331,11 +331,9 @@ public class ShopService {
 			logger.info("店名：" + shopName + "編碼：" + id);
 			// 創建按钮動作
 			Action action = new PostbackAction(shopName, "SAVE_SHOP|" + id);
-	        
-	        // 創建按钮组件
-			Button button = Button.builder()
-	                .action(action)
-	                .build();
+
+			// 創建按钮组件
+			Button button = Button.builder().action(action).build();
 			flexComponent.add(button);
 		}
 
@@ -354,15 +352,15 @@ public class ShopService {
 	public Shop saveShopStatus(String id) {
 		logger.info("=====結單修改店家狀態=====");
 		long num = Long.parseLong(id);
-		Shop Oldshop = null;
+		Shop returnShop = null;
 		Optional<Shop> shopOptional = shopDao.findById(num);
 		if (shopOptional.isPresent()) {
 			logger.info("撈出舊資料");
-			Oldshop = shopOptional.get();
+			Shop Oldshop = shopOptional.get();
 			Oldshop.setOrderStatus("1");
+			returnShop = shopDao.save(Oldshop);
 		}
-		return Oldshop;
-
+		return returnShop;
 	}
 
 	// 確認結單資料

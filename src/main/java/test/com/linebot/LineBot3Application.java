@@ -120,6 +120,10 @@ public class LineBot3Application {
 		} else if (originalMessageText.equals("訂單查詢")) {
 			logger.info("======訂單查詢：detail_order=======");
 			String order = detailService.checkOrder();
+			if(order.equals("")) {
+				TextMessage replyMessage = new TextMessage("請先點單");
+				reply(replyMessage, event.getReplyToken());
+			}
 			logger.info("回傳明細:" + order);
 			logger.info("======店家查詢：shop_order=======");
 			String shop = shopService.checkOrder();

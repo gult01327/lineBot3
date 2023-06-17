@@ -288,7 +288,7 @@ public class DetailService {
 		String order = "";
 		Date today = new Date();
 		List<Detail> detailList = detailDao.findByinputDate(today);
-		if (detailList == null || detailList.size() < 0) {
+		if (detailList == null || detailList.size() < 1) {
 			logger.info("=====查無訂單明細=====");
 			order="無明細";
 			return order;

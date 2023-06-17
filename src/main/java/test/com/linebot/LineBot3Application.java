@@ -140,22 +140,23 @@ public class LineBot3Application {
 			if (checkDetail.equals("無明細")) {
 				TextMessage replyMessage = new TextMessage("尚未有訂單，請先點單");
 				reply(replyMessage, event.getReplyToken());
-			}
-			// 跳出今日資料庫存入的店家
-			FlexMessage flexMessage = shopService.getShopTemplate(event);
-			if (flexMessage.getAltText().equals("已結單")) {
-				String orderShop = shopService.checkOrder();
-				String orderDetail = detailService.checkOrder();
-				logger.info("已結單回傳字串:" + orderShop + orderDetail);
-				TextMessage replyMessage = new TextMessage(orderShop + orderDetail);
-				reply(replyMessage, event.getReplyToken());
-			} else if (flexMessage.getAltText().equals("查無資料")) {
-				logger.info("尚未存入店家資料");
-				TextMessage replyMessage = new TextMessage("尚未存入店家資料，請輸入?地址或分享位置資訊");
-				reply(replyMessage, event.getReplyToken());
-			} else {
-				// 創建 Template Message
-				replyTemplet(flexMessage, userId);
+			}else {
+				// 跳出今日資料庫存入的店家
+				FlexMessage flexMessage = shopService.getShopTemplate(event);
+				if (flexMessage.getAltText().equals("已結單")) {
+					String orderShop = shopService.checkOrder();
+					String orderDetail = detailService.checkOrder();
+					logger.info("已結單回傳字串:" + orderShop + orderDetail);
+					TextMessage replyMessage = new TextMessage(orderShop + orderDetail);
+					reply(replyMessage, event.getReplyToken());
+				} else if (flexMessage.getAltText().equals("查無資料")) {
+					logger.info("尚未存入店家資料");
+					TextMessage replyMessage = new TextMessage("尚未存入店家資料，請輸入?地址或分享位置資訊");
+					reply(replyMessage, event.getReplyToken());
+				} else {
+					// 創建 Template Message
+					replyTemplet(flexMessage, userId);
+				}
 			}
 		}
 	}

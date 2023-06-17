@@ -349,6 +349,16 @@ public class ShopService {
 		return flexMessage;
 	}
 
+	public String checkShopOder() {
+		String returnOrder="";
+		Shop returnShopOrder = shopDao.findByStatusInputDate(new Date());
+		if (returnShopOrder != null) {
+			logger.info("=======今日已結單======");
+			 returnOrder="已結單";
+			}
+		logger.info("=======今日未結單======");
+		return returnOrder;
+	}
 	public Shop saveShopStatus(String id) {
 		logger.info("=====結單修改店家狀態=====");
 		long num = Long.parseLong(id);

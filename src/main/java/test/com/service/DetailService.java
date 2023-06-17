@@ -268,7 +268,7 @@ public class DetailService {
 		String order = "";
 		Date today = new Date();
 		List<Detail> detailList = detailDao.findByinputDate(today);
-		if (detailList != null) {
+		if (detailList != null && detailList.size() > 0) {
 			for (int i = 0; i < detailList.size(); i++) {
 				String userName = detailList.get(i).getUserName();
 				String drink = detailList.get(i).getDrink();
@@ -276,9 +276,22 @@ public class DetailService {
 				String ice = detailList.get(i).getIce();
 				String size = detailList.get(i).getSize();
 				int price = detailList.get(i).getPrice();
-				order = order + userName + "," + drink + " " + sugar + " " + ice + " " + size + " "
-						+ price + "\n";
+				order = order + userName + "," + drink + " " + sugar + " " + ice + " " + size + " " + price + "\n";
 			}
+		}
+		return order;
+	}
+
+	// 查詢訂單
+	public String checkDetailOrder() {
+		logger.info("=====訂單查詢detail_order=====");
+		String order = "";
+		Date today = new Date();
+		List<Detail> detailList = detailDao.findByinputDate(today);
+		if (detailList == null || detailList.size() < 0) {
+			logger.info("=====查無訂單明細=====");
+			order="無明細";
+			return order;
 		}
 		return order;
 	}

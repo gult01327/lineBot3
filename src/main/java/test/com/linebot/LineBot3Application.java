@@ -1,6 +1,7 @@
 package test.com.linebot;
 
 import java.net.URISyntaxException;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -117,14 +118,25 @@ public class LineBot3Application {
 			reply(replyMessage, event.getReplyToken());
 			logger.info("======回傳圖片成功=======");
 		} else if (originalMessageText.equals("訂單查詢")) {
+			logger.info("======訂單查詢：detail_order=======");
 			String order = detailService.checkOrder();
-			logger.info("回傳字串:" + order);
+			logger.info("回傳明細:" + order);
+			logger.info("======店家查詢：shop_order=======");
+			String shop = shopService.checkOrder();
+			logger.info("回傳店家:" + shop);
 			if (order == null || order.equals("")) {
 				order = "今日尚未有訂單，請點單";
 			}
-			TextMessage replyMessage = new TextMessage(order);
+			TextMessage replyMessage = new TextMessage(shop + order);
 			reply(replyMessage, event.getReplyToken());
 		} else if (originalMessageText.equals("訂單結單")) {
+			logger.info("======訂單結單:查詢明細檔=======");
+			// 檢核今日是否已有明細檔
+			String checkDetail = detailService.checkDetailOrder();
+			if (checkDetail.equals("無明細")) {
+				TextMessage replyMessage = new TextMessage("尚未有訂單，請先點單");
+				reply(replyMessage, event.getReplyToken());
+			}
 			// 跳出今日資料庫存入的店家
 			FlexMessage flexMessage = shopService.getShopTemplate(event);
 			if (flexMessage.getAltText().equals("已結單")) {
@@ -206,6 +218,12 @@ public class LineBot3Application {
 	public Message handlePostbackEvent(PostbackEvent event) {
 		String data = event.getPostbackContent().getData();
 		logger.info("按鈕回傳取得data：" + data);
+		logger.info("=====檢核是否已結單=====");
+		String returnOrder = shopService.checkShopOder();
+		if (returnOrder.equals("已結單")) {
+			return new TextMessage("訂單已結單");
+		}
+		logger.info("====準備修改shop_order=====");
 		String[] parts = data.split("\\|");
 		if (parts.length == 2 && parts[0].equals("SAVE_SHOP")) {
 			String id = parts[1];

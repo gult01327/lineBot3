@@ -304,7 +304,7 @@ public class ShopService {
 	}
 
 	public FlexMessage getShopTemplate(MessageEvent<TextMessageContent> event) throws Exception {
-		logger.info("查詢訂單：查詢今日存入的店家是否已結單");
+		logger.info("查詢shop_oder：今日存入的店家是否已結單");
 		Shop shopOrder = shopDao.findByStatusInputDate(new Date());
 		if (shopOrder != null) {
 			logger.info("=======今日已結單======");
@@ -315,8 +315,10 @@ public class ShopService {
 		}
 		List<Shop> shopList = shopDao.findByinputDate(new Date());
 		if (shopList == null || shopList.size() < 1) {
-			logger.info("查詢訂單：查無店家");
-			return null;
+			logger.info("查詢shop_oder：查無店家");
+			FlexMessage flexMessage = FlexMessage.builder().altText("查無資料")
+					.contents(Carousel.builder().contents(null).build()).build();
+			return flexMessage;
 		}
 
 		List<FlexComponent> flexComponent = new ArrayList<>();

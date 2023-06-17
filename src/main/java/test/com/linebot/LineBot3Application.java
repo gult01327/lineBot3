@@ -135,7 +135,7 @@ public class LineBot3Application {
 				logger.info("已結單回傳字串:" + orderShop + orderDetail);
 				TextMessage replyMessage = new TextMessage(orderShop + orderDetail);
 				reply(replyMessage, event.getReplyToken());
-			} else {
+			} else if (flexMessage.getAltText().equals("查無資料")) {
 				logger.info("尚未存入店家資料");
 				TextMessage replyMessage = new TextMessage("尚未存入店家資料，請輸入?地址或分享位置資訊");
 				reply(replyMessage, event.getReplyToken());

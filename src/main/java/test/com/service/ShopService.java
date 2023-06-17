@@ -35,6 +35,7 @@ import com.linecorp.bot.model.event.message.LocationMessageContent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
 import com.linecorp.bot.model.message.FlexMessage;
 import com.linecorp.bot.model.message.flex.component.Box;
+import com.linecorp.bot.model.message.flex.component.Button;
 import com.linecorp.bot.model.message.flex.component.FlexComponent;
 import com.linecorp.bot.model.message.flex.component.Image;
 import com.linecorp.bot.model.message.flex.component.Text;
@@ -328,10 +329,14 @@ public class ShopService {
 			String shopName = shopList.get(i).getShopName();
 			Long id = shopList.get(i).getId();
 			logger.info("店名：" + shopName + "編碼：" + id);
+			// 創建按钮動作
 			Action action = new PostbackAction(shopName, "SAVE_SHOP|" + id);
-			FlexComponent text = Text.builder().text(shopName).size(FlexFontSize.SM).wrap(true)
-					.margin(FlexMarginSize.MD).action(action).build();
-			flexComponent.add(text);
+	        
+	        // 創建按钮组件
+			Button button = Button.builder()
+	                .action(action)
+	                .build();
+			flexComponent.add(button);
 		}
 
 		// 創建Bubble组件

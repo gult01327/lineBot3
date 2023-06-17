@@ -21,6 +21,7 @@ import com.linecorp.bot.model.PushMessage;
 import com.linecorp.bot.model.ReplyMessage;
 import com.linecorp.bot.model.event.Event;
 import com.linecorp.bot.model.event.MessageEvent;
+import com.linecorp.bot.model.event.PostbackEvent;
 import com.linecorp.bot.model.event.message.LocationMessageContent;
 import com.linecorp.bot.model.event.message.StickerMessageContent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
@@ -118,15 +119,15 @@ public class LineBot3Application {
 		} else if (originalMessageText.equals("訂單查詢")) {
 			String order = detailService.checkOrder();
 			logger.info("回傳字串:" + order);
-			if(order==null||order.equals("")) {
-				order="今日尚未有訂單，請點單";
+			if (order == null || order.equals("")) {
+				order = "今日尚未有訂單，請點單";
 			}
 			TextMessage replyMessage = new TextMessage(order);
 			reply(replyMessage, event.getReplyToken());
 		} else if (originalMessageText.equals("訂單結單")) {
 			// 跳出今日資料庫存入的店家
 			FlexMessage flexMessage = shopService.getShopTemplate(event);
-			 if (flexMessage.getAltText().equals("已結單")) {
+			if (flexMessage.getAltText().equals("已結單")) {
 				String orderShop = shopService.checkOrder();
 				String orderDetail = detailService.checkOrder();
 				logger.info("已結單回傳字串:" + orderShop + orderDetail);
@@ -136,7 +137,7 @@ public class LineBot3Application {
 				logger.info("尚未存入店家資料");
 				TextMessage replyMessage = new TextMessage("尚未存入店家資料，請輸入?地址或分享位置資訊");
 				reply(replyMessage, event.getReplyToken());
-			}else {
+			} else {
 				// 創建 Template Message
 				replyTemplet(flexMessage, userId);
 			}
@@ -200,9 +201,10 @@ public class LineBot3Application {
 		}
 	}
 
-	// 結單時點選店家按鈕回傳
-	@RequestMapping("/callback")
-	public String handleCallback(@RequestParam("data") String data) {
+	// 接收回傳值的方法
+	@EventMapping
+	public Message handlePostbackEvent(PostbackEvent event) {
+		String data = event.getPostbackContent().getData();
 		logger.info("按鈕回傳取得data：" + data);
 		String[] parts = data.split("\\|");
 		if (parts.length == 2 && parts[0].equals("SAVE_SHOP")) {
@@ -211,10 +213,10 @@ public class LineBot3Application {
 			Shop returnShop = shopService.saveShopStatus(id);
 			if (returnShop != null) {
 				logger.info("店家編碼：" + id + "狀態修改成功");
-			} else {
-				logger.info("店家編碼：" + id + "狀態修改失敗");
+				return new TextMessage("訂單結單成功");
 			}
 		}
-		return "結單!!!";
+		logger.info("shop_order狀態修改失敗");
+		return new TextMessage("訂單結單失敗");
 	}
 }

@@ -118,6 +118,9 @@ public class LineBot3Application {
 		} else if (originalMessageText.equals("訂單查詢")) {
 			String order = detailService.checkOrder();
 			logger.info("回傳字串:" + order);
+			if(order==null||order.equals("")) {
+				order="今日尚未有訂單，請點單";
+			}
 			TextMessage replyMessage = new TextMessage(order);
 			reply(replyMessage, event.getReplyToken());
 		} else if (originalMessageText.equals("訂單結單")) {
@@ -133,6 +136,7 @@ public class LineBot3Application {
 				TextMessage replyMessage = new TextMessage(orderShop + orderDetail);
 				reply(replyMessage, event.getReplyToken());
 			} else {
+				logger.info("尚未存入店家資料");
 				TextMessage replyMessage = new TextMessage("尚未存入店家資料，請輸入?地址或分享位置資訊");
 				reply(replyMessage, event.getReplyToken());
 			}

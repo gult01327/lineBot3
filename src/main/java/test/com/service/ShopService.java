@@ -314,7 +314,7 @@ public class ShopService {
 			return flexMessage;
 		}
 		List<Shop> shopList = shopDao.findByinputDate(new Date());
-		if (shopList == null) {
+		if (shopList == null || shopList.size() < 1) {
 			logger.info("查詢訂單：查無店家");
 			return null;
 		}
@@ -327,12 +327,8 @@ public class ShopService {
 			Long id = shopList.get(i).getId();
 			logger.info("店名：" + shopName + "編碼：" + id);
 			Action action = new PostbackAction(shopName, "SAVE_SHOP|" + id);
-			FlexComponent text = Text.builder()
-					.text(shopName)
-					.size(FlexFontSize.SM)
-					.wrap(true)
-					.margin(FlexMarginSize.MD)
-					.action(action).build();
+			FlexComponent text = Text.builder().text(shopName).size(FlexFontSize.SM).wrap(true)
+					.margin(FlexMarginSize.MD).action(action).build();
 			flexComponent.add(text);
 		}
 

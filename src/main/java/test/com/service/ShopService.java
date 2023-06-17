@@ -35,6 +35,7 @@ import com.linecorp.bot.model.event.message.LocationMessageContent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
 import com.linecorp.bot.model.message.FlexMessage;
 import com.linecorp.bot.model.message.flex.component.Box;
+import com.linecorp.bot.model.message.flex.component.FlexComponent;
 import com.linecorp.bot.model.message.flex.component.Image;
 import com.linecorp.bot.model.message.flex.component.Text;
 import com.linecorp.bot.model.message.flex.container.Bubble;
@@ -302,40 +303,49 @@ public class ShopService {
 		return flexMessage;
 	}
 
-	public ButtonsTemplate getShopTemplate(MessageEvent<TextMessageContent> event) throws Exception {
-		List<Action> actions = new ArrayList<>();
+	public FlexMessage getShopTemplate(MessageEvent<TextMessageContent> event) throws Exception {
 		logger.info("查詢訂單：查詢今日存入的店家是否已結單");
 		Shop shopOrder = shopDao.findByStatusInputDate(new Date());
 		if (shopOrder != null) {
 			logger.info("=======今日已結單======");
-			actions.add(new PostbackAction(shopOrder.getShopName(), "SAVE_SHOP|Order"));
-			ButtonsTemplate buttonsTemplate = new ButtonsTemplate(null, // thumbnailImageUrl
-					null, // title
-					"已結單", // text
-					actions // actions
-			);
-			return buttonsTemplate;
+			FlexMessage flexMessage = FlexMessage.builder().altText("已結單")
+					.contents(Carousel.builder().contents(null).build()).build();
+
+			return flexMessage;
 		}
 		List<Shop> shopList = shopDao.findByinputDate(new Date());
 		if (shopList == null) {
 			logger.info("查詢訂單：查無店家");
 			return null;
 		}
-		// 創建 Buttons Template
 
+		List<FlexComponent> flexComponent = new ArrayList<>();
+		List<Bubble> flexBubbles = new ArrayList<>();
+		// 創建Bubble的内容
 		for (int i = 0; i < shopList.size(); i++) {
 			String shopName = shopList.get(i).getShopName();
 			Long id = shopList.get(i).getId();
 			logger.info("店名：" + shopName + "編碼：" + id);
-			actions.add(new PostbackAction(shopName, "SAVE_SHOP|" + id));
+			Action action = new PostbackAction(shopName, "SAVE_SHOP|" + id);
+			FlexComponent text = Text.builder()
+					.text(shopName)
+					.size(FlexFontSize.SM)
+					.wrap(true)
+					.margin(FlexMarginSize.MD)
+					.action(action).build();
+			flexComponent.add(text);
 		}
-		// 創建 Buttons Template
-		ButtonsTemplate buttonsTemplate = new ButtonsTemplate(null, // thumbnailImageUrl
-				null, // title
-				"請選擇店家", // text
-				actions // actions
-		);
-		return buttonsTemplate;
+
+		// 創建Bubble组件
+		Box body = Box.builder().layout(FlexLayout.VERTICAL).contents(flexComponent).build();
+		Bubble bubble = Bubble.builder().body(body).build();
+		flexBubbles.add(bubble);
+
+		// 創建Flex訊息
+		FlexMessage flexMessage = FlexMessage.builder().altText("Nearby Drink Shops")
+				.contents(Carousel.builder().contents(flexBubbles).build()).build();
+
+		return flexMessage;
 	}
 
 	public Shop saveShopStatus(String id) {

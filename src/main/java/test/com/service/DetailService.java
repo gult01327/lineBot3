@@ -276,8 +276,8 @@ public class DetailService {
 				String ice = detailList.get(i).getIce();
 				String size = detailList.get(i).getSize();
 				int price = detailList.get(i).getPrice();
-				order = userName + ",飲料:" + drink + ",甜度:" + sugar + ",冰塊:" + ice + " (" + size + "),金額:" + price
-						+ "\n";
+				order = order + userName + "," + drink + " " + sugar + " " + ice + " " + size + " "
+						+ price + "\n";
 			}
 		}
 		return order;

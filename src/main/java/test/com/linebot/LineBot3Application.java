@@ -122,12 +122,11 @@ public class LineBot3Application {
 			reply(replyMessage, event.getReplyToken());
 		} else if (originalMessageText.equals("訂單結單")) {
 			// 跳出今日資料庫存入的店家
-			ButtonsTemplate buttonsTemplate = shopService.getShopTemplate(event);
-			if (buttonsTemplate != null) {
+			FlexMessage flexMessage = shopService.getShopTemplate(event);
+			if (flexMessage != null) {
 				// 创建 Template Message
-				TemplateMessage templateMessage = new TemplateMessage("Buttons Template", buttonsTemplate);
-				reply(templateMessage, event.getReplyToken());
-			} else if (buttonsTemplate.getText().equals("已結單")) {
+				replyTemplet(flexMessage, userId);
+			} else if (flexMessage.getAltText().equals("已結單")) {
 				String orderShop = shopService.checkOrder();
 				String orderDetail = detailService.checkOrder();
 				logger.info("已結單回傳字串:" + orderShop + orderDetail);

@@ -324,6 +324,10 @@ public class ShopService {
 
 		List<FlexComponent> flexComponent = new ArrayList<>();
 		List<Bubble> flexBubbles = new ArrayList<>();
+		// 創建文字說明
+		Text text = Text.builder().text("請選擇店家").weight(Text.TextWeight.BOLD).size(FlexFontSize.LG)
+		.margin(FlexMarginSize.NONE).build();
+		flexComponent.add(text);
 		// 創建Bubble的内容
 		for (int i = 0; i < shopList.size(); i++) {
 			String shopName = shopList.get(i).getShopName();
@@ -336,7 +340,7 @@ public class ShopService {
 			Button button = Button.builder().action(action).build();
 			flexComponent.add(button);
 		}
-
+		
 		// 創建Bubble组件
 		Box body = Box.builder().layout(FlexLayout.VERTICAL).contents(flexComponent).build();
 		Bubble bubble = Bubble.builder().body(body).build();

@@ -41,8 +41,10 @@ public class MainService {
 		return mainList;
 
 	}
-
+	
+	//結單
 	public Main saveMain(Main main) {
+		main.setOrderDate(new Date());
 		Main returnMain = mainDao.save(main);
 		return returnMain;
 

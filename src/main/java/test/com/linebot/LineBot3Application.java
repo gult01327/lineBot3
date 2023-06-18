@@ -294,8 +294,8 @@ public class LineBot3Application {
 			String mainIdstr = parts[1];
 			long mainlId = Long.parseLong(mainIdstr);
 			logger.info("=====結單回傳：查詢主檔main_order=====");
-			Main main = mainService.findMainById(mainlId);
-			if (main.getOrderDate() != null) {
+			Main returnMain = mainService.findMainById(mainlId);
+			if (returnMain.getOrderDate() != null) {
 				logger.info("=====結單回傳：回傳主檔已結單=====");
 				// 查出明細檔order_no
 				logger.info("======訂單查詢：detail_order=======");
@@ -303,14 +303,15 @@ public class LineBot3Application {
 				if (order.equals("")) {
 					logger.info("此訂單主檔：" + mainlId + ",查無明細檔");
 				}
-				String shopName = main.getShopName();
+				String shopName = returnMain.getShopName();
 				order = "<" + shopName + ">" + order;
 				logger.info("回傳明細:" + order);
 				return new TextMessage("訂單已結單" + "\n" + order);
 			} else {
 				logger.info("=====結單回傳：回傳主檔未結單=====");
 				logger.info("=====結單回傳：修改主檔main_order=====");
-				Main returnMain = mainService.saveMain(main);
+				returnMain.setOrderDate(new Date());
+				Main main = mainService.saveMain(returnMain);
 				return new TextMessage(userName + ",結單成功");
 			}
 		} else if (flag.equals("FIND_MAIN")) {

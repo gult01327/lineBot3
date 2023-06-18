@@ -256,31 +256,38 @@ public class LineBot3Application {
 				logger.info("=====detail_order修改明細檔order_no=====");
 				// 先檢核再更新Detail_ordere欄位order_no
 				Detail returnDetail = detailService.updateOrderNo(main.getOrderNo(), detailId);
-				if (returnDetail.getOrderNo()!=null) {
-					return new TextMessage(userName + ",訂單編號：" + detailId + ",選取店家："+shopName+"儲存成功");
-				} else {
+				if (returnDetail.getOrderNo() != null) {
 					return new TextMessage(userName + ",訂單編號：" + detailId + ",已選擇店家，不可修改");
+				} else {
+					return new TextMessage(userName + ",訂單編號：" + detailId + ",選取店家：" + shopName + "儲存成功");
 				}
 			} else {
-				logger.info("=====main_order尚未有單/已有結單的單，新增主檔=====");
-				// 尚未有訂單，新增main_order
-				Main newMain = new Main();
-				newMain.setShopName(shopName);
-				newMain.setShopId(shopId);
-				newMain.setInputDate(new Date());
-				Main returnMain = mainService.saveMain(newMain);
-				if (returnMain.getOrderNo() != null) {
-					logger.info("=====main_order新增主檔成功=====");
-					logger.info("=====detail_order修改明細檔=====");
-					Detail returnDetail = detailService.updateOrderNo(returnMain.getOrderNo(), detailId);
-					return new TextMessage(userName + ",訂單編號：" + detailId + ",儲存成功");
+				logger.info("=====main_order尚未有單/已有結單的單=====");
+				logger.info("=====檢核detail_order明細檔order_no=====");
+				Detail detail = detailService.checkOrderNo(detailId);
+				if (detail.getOrderNo() != null) {
+					logger.info("=====檢核detail_order明細檔order_no，已有主檔號碼=====");
+					return new TextMessage(userName + ",訂單編號：" + detailId + ",已選擇店家，不可修改");
 				} else {
-					logger.info("=====main_order新增主檔失敗=====");
-					logger.info("=====detail_order刪除明細檔=====");
-					detailService.removeDetail(detailId);
-					return new TextMessage(userName + ",訂單新增失敗");
+					logger.info("=====檢核detail_order明細檔order_no，無主檔號碼=====");
+					// 尚未有訂單，新增main_order
+					Main newMain = new Main();
+					newMain.setShopName(shopName);
+					newMain.setShopId(shopId);
+					newMain.setInputDate(new Date());
+					Main returnMain = mainService.saveMain(newMain);
+					if (returnMain.getOrderNo() != null) {
+						logger.info("=====main_order新增主檔成功=====");
+						logger.info("=====detail_order修改明細檔=====");
+						Detail returnDetail = detailService.updateOrderNo(returnMain.getOrderNo(), detailId);
+						return new TextMessage(userName + ",訂單編號：" + detailId + ",儲存成功");
+					} else {
+						logger.info("=====main_order新增主檔失敗=====");
+						logger.info("=====detail_order刪除明細檔=====");
+						detailService.removeDetail(detailId);
+						return new TextMessage(userName + ",訂單新增失敗");
+					}
 				}
-
 			}
 		} else if (flag.equals("END_MAIN")) {
 			logger.info("=====結單回傳=====");

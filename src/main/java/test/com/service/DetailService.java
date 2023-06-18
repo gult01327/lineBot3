@@ -301,20 +301,32 @@ public class DetailService {
 		Detail returnDetail = new Detail();
 		if (detailOption.isPresent()) {
 			Detail detail = detailOption.get();
-			if(detail.getOrderNo()!=null) {
+			if (detail.getOrderNo() != null) {
 				logger.info("=====訂單明細的oder_no有值，已有主檔=====");
 				return returnDetail;
-			}else{
+			} else {
 				logger.info("=====訂單明細的oder_no沒值，沒有主檔，更新=====");
 				detail.setOrderNo(oderNo);
-				returnDetail=detailDao.save(detail);
+				returnDetail = detailDao.save(detail);
 			}
-			
+
 		}
 		return returnDetail;
 
 	}
-	
+
+	// 查詢明細oder_no
+	public Detail checkOrderNo(Long detailId) {
+		logger.info("=====查詢訂單明細的oder_no=====");
+		Optional<Detail> detailOption = detailDao.findById(detailId);
+		Detail returnDetail = new Detail();
+		if (detailOption.isPresent()) {
+			returnDetail = detailOption.get();
+		}
+		return returnDetail;
+
+	}
+
 	public void removeDetail(Long detailId) {
 		detailDao.deleteById(detailId);
 		logger.info("=====刪除訂單明細=====");

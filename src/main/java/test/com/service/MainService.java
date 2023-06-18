@@ -36,9 +36,9 @@ public class MainService {
 	@Autowired
 	private MainDao mainDao;
 
-	public Main checkorderDate(String shopName, String shopId) {
-		Main main = mainDao.findByShopIdShopName(shopId, new Date());
-		return main;
+	public List<Main> checkorderDate(String shopName, String shopId) {
+		List<Main> mainList = mainDao.findByShopIdInputdate(shopId, new Date());
+		return mainList;
 
 	}
 

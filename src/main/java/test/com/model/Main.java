@@ -23,7 +23,7 @@ public class Main {
 	private String shopId;
 	@Column(name = "order_date")
 	private Date orderDate;
-	@Column(name = "inputdate")
+	@Column(name = "input_date")
 	private Date inputDate;
 
 	public Long getOrderNo() {

@@ -31,7 +31,6 @@ import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.StickerMessage;
 import com.linecorp.bot.model.message.TemplateMessage;
 import com.linecorp.bot.model.message.TextMessage;
-import com.linecorp.bot.model.message.template.ButtonsTemplate;
 import com.linecorp.bot.model.profile.UserProfileResponse;
 import com.linecorp.bot.spring.boot.annotation.EventMapping;
 import com.linecorp.bot.spring.boot.annotation.LineMessageHandler;
@@ -250,45 +249,26 @@ public class LineBot3Application {
 			String detailIdstr = parts[3];
 			long detailId = Long.parseLong(detailIdstr);
 			logger.info("=====檢核main_order是否已有單=====");
-			Main main = mainService.checkorderDate(shopName, shopId);
-			if (main != null) {
-				if (main.getOrderDate() != null) {
-					logger.info("=====main_order已有未結單的單=====");
-					logger.info("=====detail_order修改明細檔order_no=====");
-					// 更新Detail_ordere欄位order_no
-					Detail returnDetail = detailService.updateOrderNo(main.getOrderNo(), detailId);
-					if (returnDetail != null) {
-						return new TextMessage(userName + ",訂單編號：" + detailId + ",儲存成功");
-					} else {
-						return new TextMessage(userName + ",訂單編號：" + detailId + ",儲存失敗");
-					}
+			List<Main> mainList = mainService.checkorderDate(shopName, shopId);
+			if (mainList != null && mainList.size() > 0) {
+				logger.info("=====main_order已有單，未結=====");
+				Main main = mainList.get(0);
+				logger.info("=====detail_order修改明細檔order_no=====");
+				// 更新Detail_ordere欄位order_no
+				Detail returnDetail = detailService.updateOrderNo(main.getOrderNo(), detailId);
+				if (returnDetail != null) {
+					return new TextMessage(userName + ",訂單編號：" + detailId + ",儲存成功");
 				} else {
-					logger.info("=====main_order已有結單的單=====");
-					Main newMain = null;
-					newMain.setShopName(shopName);
-					newMain.setShopId(shopId);
-					newMain.setInputDate(new Date());
-					logger.info("=====main_order新增主檔=====");
-					Main returnMain = mainService.saveMain(newMain);
-					if (returnMain.getOrderNo() != null) {
-						logger.info("=====main_order新增主檔成功=====");
-						logger.info("=====detail_order修改明細檔order_no=====");
-						Detail returnDetail = detailService.updateOrderNo(returnMain.getOrderNo(), detailId);
-						return new TextMessage(userName + ",訂單編號：" + detailId + ",儲存成功");
-					} else {
-						logger.info("=====main_order新增主檔失敗=====");
-						logger.info("=====detail_order刪除明細檔=====");
-						detailService.removeDetail(detailId);
-						return new TextMessage(userName + ",訂單新增失敗");
-					}
+					return new TextMessage(userName + ",訂單編號：" + detailId + ",儲存失敗");
 				}
 			} else {
-				logger.info("=====main_order尚未有單，新增主檔=====");
+				logger.info("=====main_order尚未有單/已有結單的單，新增主檔=====");
 				// 尚未有訂單，新增main_order
-				main.setShopName(shopName);
-				main.setShopId(shopId);
-				main.setInputDate(new Date());
-				Main returnMain = mainService.saveMain(main);
+				Main newMain = null;
+				newMain.setShopName(shopName);
+				newMain.setShopId(shopId);
+				newMain.setInputDate(new Date());
+				Main returnMain = mainService.saveMain(newMain);
 				if (returnMain.getOrderNo() != null) {
 					logger.info("=====main_order新增主檔成功=====");
 					logger.info("=====detail_order修改明細檔=====");
@@ -344,7 +324,7 @@ public class LineBot3Application {
 			if (main.getOrderDate() != null) {
 				logger.info("=====訂單查詢回傳：回傳主檔已結單=====");
 				return new TextMessage("訂單已結單" + "\n" + order);
-			}else {
+			} else {
 				logger.info("=====訂單查詢回傳：回傳主檔尚未結單=====");
 				return new TextMessage("訂單尚未結單" + "\n" + order);
 			}

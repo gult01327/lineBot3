@@ -3,7 +3,6 @@ package test.com.service;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -27,7 +26,6 @@ import com.google.maps.model.PlaceDetails;
 import com.google.maps.model.PlacesSearchResponse;
 import com.google.maps.model.PlacesSearchResult;
 import com.linecorp.bot.model.action.Action;
-import com.linecorp.bot.model.action.MessageAction;
 import com.linecorp.bot.model.action.PostbackAction;
 import com.linecorp.bot.model.action.URIAction;
 import com.linecorp.bot.model.event.MessageEvent;
@@ -41,10 +39,10 @@ import com.linecorp.bot.model.message.flex.component.Image;
 import com.linecorp.bot.model.message.flex.component.Text;
 import com.linecorp.bot.model.message.flex.container.Bubble;
 import com.linecorp.bot.model.message.flex.container.Carousel;
+import com.linecorp.bot.model.message.flex.unit.FlexAlign;
 import com.linecorp.bot.model.message.flex.unit.FlexFontSize;
 import com.linecorp.bot.model.message.flex.unit.FlexLayout;
 import com.linecorp.bot.model.message.flex.unit.FlexMarginSize;
-import com.linecorp.bot.model.message.template.ButtonsTemplate;
 
 import test.com.dao.ShopDao;
 import test.com.model.Shop;
@@ -304,16 +302,9 @@ public class ShopService {
 		return flexMessage;
 	}
 
-	public FlexMessage getShopTemplate(MessageEvent<TextMessageContent> event) throws Exception {
-		logger.info("查詢shop_oder：今日存入的店家是否已結單");
-		Shop shopOrder = shopDao.findByStatusInputDate(new Date());
-		if (shopOrder != null) {
-			logger.info("=======今日已結單======");
-			FlexMessage flexMessage = FlexMessage.builder().altText("已結單")
-					.contents(Carousel.builder().contents(null).build()).build();
 
-			return flexMessage;
-		}
+	// 點單時先檢核店家
+	public FlexMessage findShopTemplate(MessageEvent<TextMessageContent> event, Long detailId) throws Exception {
 		List<Shop> shopList = shopDao.findByinputDate(new Date());
 		if (shopList == null || shopList.size() < 1) {
 			logger.info("查詢shop_oder：查無店家");
@@ -326,21 +317,21 @@ public class ShopService {
 		List<Bubble> flexBubbles = new ArrayList<>();
 		// 創建文字說明
 		Text text = Text.builder().text("請選擇店家").weight(Text.TextWeight.BOLD).size(FlexFontSize.LG)
-		.margin(FlexMarginSize.NONE).build();
+				.align(FlexAlign.CENTER).margin(FlexMarginSize.NONE).build();
 		flexComponent.add(text);
 		// 創建Bubble的内容
 		for (int i = 0; i < shopList.size(); i++) {
 			String shopName = shopList.get(i).getShopName();
-			Long id = shopList.get(i).getId();
-			logger.info("店名：" + shopName + "編碼：" + id);
+			String shopId = shopList.get(i).getShopId();
+			logger.info("店名：" + shopName + "店家id：" + shopId);
 			// 創建按钮動作
-			Action action = new PostbackAction(shopName, "SAVE_SHOP|" + id);
-
+			Action action = new PostbackAction(shopName, "SAVE_MAIN|" + shopName + "|" + shopId + "|" + detailId);
 			// 創建按钮组件
 			Button button = Button.builder().action(action).build();
+
 			flexComponent.add(button);
 		}
-		
+
 		// 創建Bubble组件
 		Box body = Box.builder().layout(FlexLayout.VERTICAL).contents(flexComponent).build();
 		Bubble bubble = Bubble.builder().body(body).build();
@@ -354,15 +345,16 @@ public class ShopService {
 	}
 
 	public String checkShopOder() {
-		String returnOrder="";
+		String returnOrder = "";
 		Shop returnShopOrder = shopDao.findByStatusInputDate(new Date());
 		if (returnShopOrder != null) {
 			logger.info("=======今日已結單======");
-			 returnOrder="已結單";
-			}
+			returnOrder = "已結單";
+		}
 		logger.info("=======今日未結單======");
 		return returnOrder;
 	}
+
 	public Shop saveShopStatus(String id) {
 		logger.info("=====結單修改店家狀態=====");
 		long num = Long.parseLong(id);

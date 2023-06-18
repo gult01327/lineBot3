@@ -70,14 +70,15 @@ public class DetailService {
 	}
 
 	// 新增飲料
-	public Message addDrink(String userId, String userName, String originalMessageText) {
+	public Detail addDrink(String userId, String userName, String originalMessageText) {
 		logger.info("進入SERVICCE method: addDrink");
+		Detail returnDetail = null;
 		String[] str = originalMessageText.substring(1).split(" ");
 		// 檢核輸入格式
 		if (str.length != 5) {
 			logger.info("======新增飲料:空格位置錯誤=========");
-			TextMessage replyMessage = new TextMessage(userName + "，注意空格位置,請輸入『+飲料 甜度 冰塊 大小 金額』");
-			return replyMessage;
+			returnDetail.setStatus(userName + "，注意空格位置,請輸入『+飲料 甜度 冰塊 大小 金額』");
+			return returnDetail;
 		}
 		String drink = str[0];
 		String sugar = str[1];
@@ -89,8 +90,8 @@ public class DetailService {
 		// 檢核輸入內容格式
 		if (sugar.contains("冰") || sugar.contains("溫") || sugar.contains("熱") || ice.contains("糖")
 				|| ice.contains("甜")) {
-			TextMessage replyMessage = new TextMessage(userName + "，請依排列順序輸入『+飲料 甜度 冰塊 大小 金額』");
-			return replyMessage;
+			returnDetail.setStatus(userName + "，請依排列順序輸入『+飲料 甜度 冰塊 大小 金額』");
+			return returnDetail;
 		}
 		Detail detail = new Detail();
 		detail.setDrink(drink);
@@ -102,10 +103,8 @@ public class DetailService {
 		detail.setInputdate(new Date());
 		detail.setStatus("1"); // 0：無效，1-有效
 		logger.info("========開始新增飲料=======");
-		Detail returnDetail = insertDetail(detail);
-		logger.info("========回傳新增成功訊息=======");
-		TextMessage replyMessage = new TextMessage(userName + "新增成功，訂單編號：" + returnDetail.getId());
-		return replyMessage;
+		returnDetail = insertDetail(detail);
+		return returnDetail;
 	}
 
 	// 存入DB
@@ -262,12 +261,11 @@ public class DetailService {
 		return returnDetail;
 	}
 
-	// 查詢訂單
-	public String checkOrder() {
+	// 結單時查詢訂單
+	public String checkOrder(Long orderNo) {
 		logger.info("=====訂單查詢detail_order=====");
 		String order = "";
-		Date today = new Date();
-		List<Detail> detailList = detailDao.findByinputDate(today);
+		List<Detail> detailList = detailDao.findByOrderNo(orderNo);
 		if (detailList != null && detailList.size() > 0) {
 			for (int i = 0; i < detailList.size(); i++) {
 				String userName = detailList.get(i).getUserName();
@@ -276,7 +274,7 @@ public class DetailService {
 				String ice = detailList.get(i).getIce();
 				String size = detailList.get(i).getSize();
 				int price = detailList.get(i).getPrice();
-				order = order + userName + "," + drink + " " + sugar + " " + ice + " " + size + " " + price + "\n";
+				order = order + "\n" + userName + "," + drink + " " + sugar + " " + ice + " " + size + " " + price;
 			}
 		}
 		return order;
@@ -290,10 +288,28 @@ public class DetailService {
 		List<Detail> detailList = detailDao.findByinputDate(today);
 		if (detailList == null || detailList.size() < 1) {
 			logger.info("=====查無訂單明細=====");
-			order="無明細";
+			order = "無明細";
 			return order;
 		}
 		return order;
+	}
+
+	// 將oderno寫入
+	public Detail updateOrderNo(Long oderNo, Long detailId) {
+		Optional<Detail> detailOption = detailDao.findById(detailId);
+		Detail returnDetail = null;
+		if (detailOption.isPresent()) {
+			Detail detail = detailOption.get();
+			detail.setOrderNo(oderNo);
+			returnDetail=detailDao.save(detail);
+		}
+		return returnDetail;
+
+	}
+	
+	public void removeDetail(Long detailId) {
+		detailDao.deleteById(detailId);
+		logger.info("=====刪除訂單明細=====");
 	}
 
 }

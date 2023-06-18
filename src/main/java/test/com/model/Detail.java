@@ -28,7 +28,8 @@ public class Detail {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-
+	@Column(name = "order_no")
+	private Long orderNo;
 
 	public String getUserName() {
 		return userName;
@@ -116,6 +117,14 @@ public class Detail {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	public Long getOrderNo() {
+		return orderNo;
+	}
+
+	public void setOrderNo(Long orderNo) {
+		this.orderNo = orderNo;
 	}
 
 }

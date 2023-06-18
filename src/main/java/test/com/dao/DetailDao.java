@@ -15,5 +15,8 @@ public interface DetailDao extends JpaRepository<Detail, Long>{
 	
 	@Query("SELECT s FROM Detail s WHERE inputDate = :today and status='1'")
 	 public List<Detail> findByinputDate(@Param("today") Date today);
-
+	
+	@Query("SELECT s FROM Detail s WHERE orderNo = :orderNo and status='1'")
+	 public List<Detail> findByOrderNo(@Param("orderNo") Long orderNo);
+	
 }

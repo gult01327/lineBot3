@@ -257,9 +257,9 @@ public class LineBot3Application {
 				// 先檢核再更新Detail_ordere欄位order_no
 				Detail returnDetail = detailService.updateOrderNo(main.getOrderNo(), detailId);
 				if (returnDetail.getOrderNo() != null) {
-					return new TextMessage(userName + ",訂單編號：" + detailId + ",已選擇店家:"+main.getShopName());
+					return new TextMessage(userName + ",訂單編號：" + detailId + ",已選擇店家，不可修改");
 				} else {
-					return new TextMessage(userName + ",訂單編號：" + detailId + ",選取店家：" + shopName + "儲存成功");
+					return new TextMessage(userName + ",訂單編號：" + detailId + ",選取：" + shopName + "儲存成功");
 				}
 			} else {
 				logger.info("=====main_order尚未有單/已有結單的單=====");
@@ -280,7 +280,7 @@ public class LineBot3Application {
 						logger.info("=====main_order新增主檔成功=====");
 						logger.info("=====detail_order修改明細檔=====");
 						Detail returnDetail = detailService.updateOrderNo(returnMain.getOrderNo(), detailId);
-						return new TextMessage(userName + ",訂單編號：" + detailId + ",儲存成功");
+						return new TextMessage(userName + ",訂單編號：" + detailId + ",選取:"+returnMain.getShopName()+"儲存成功");
 					} else {
 						logger.info("=====main_order新增主檔失敗=====");
 						logger.info("=====detail_order刪除明細檔=====");

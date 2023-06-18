@@ -296,12 +296,20 @@ public class DetailService {
 
 	// 將oderno寫入
 	public Detail updateOrderNo(Long oderNo, Long detailId) {
+		logger.info("=====查詢訂單明細的oder_no=====");
 		Optional<Detail> detailOption = detailDao.findById(detailId);
-		Detail returnDetail = null;
+		Detail returnDetail = new Detail();
 		if (detailOption.isPresent()) {
 			Detail detail = detailOption.get();
-			detail.setOrderNo(oderNo);
-			returnDetail=detailDao.save(detail);
+			if(detail.getOrderNo()!=null) {
+				logger.info("=====訂單明細的oder_no有值，已有主檔=====");
+				return returnDetail;
+			}else{
+				logger.info("=====訂單明細的oder_no沒值，沒有主檔，更新=====");
+				detail.setOrderNo(oderNo);
+				returnDetail=detailDao.save(detail);
+			}
+			
 		}
 		return returnDetail;
 

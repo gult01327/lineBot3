@@ -49,7 +49,7 @@ public class MainService {
 	}
 
 	public Main findMainById(Long mainId) {
-		Main main = null;
+		Main main = new Main();
 		Optional<Main> mainOption = mainDao.findById(mainId);
 		if (mainOption.isPresent()) {
 			main = mainOption.get();

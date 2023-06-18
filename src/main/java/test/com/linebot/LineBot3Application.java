@@ -256,7 +256,7 @@ public class LineBot3Application {
 				logger.info("=====detail_order修改明細檔order_no=====");
 				// 更新Detail_ordere欄位order_no
 				Detail returnDetail = detailService.updateOrderNo(main.getOrderNo(), detailId);
-				if (returnDetail != null) {
+				if (returnDetail.getOrderNo()!=null) {
 					return new TextMessage(userName + ",訂單編號：" + detailId + ",儲存成功");
 				} else {
 					return new TextMessage(userName + ",訂單編號：" + detailId + ",儲存失敗");
@@ -264,7 +264,7 @@ public class LineBot3Application {
 			} else {
 				logger.info("=====main_order尚未有單/已有結單的單，新增主檔=====");
 				// 尚未有訂單，新增main_order
-				Main newMain = null;
+				Main newMain = new Main();
 				newMain.setShopName(shopName);
 				newMain.setShopId(shopId);
 				newMain.setInputDate(new Date());

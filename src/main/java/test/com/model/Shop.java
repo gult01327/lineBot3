@@ -24,7 +24,7 @@ public class Shop {
 	private Date inputDate;
 	@Column(name = "input_name")
 	private String inputName;
-	@Column(name = "order_status")
+	@Column(name = "status")
 	private String orderStatus;
 
 	public Long getId() {

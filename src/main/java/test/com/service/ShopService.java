@@ -178,7 +178,7 @@ public class ShopService {
 				shop.setShopId(placeId);
 				shop.setInputDate(new Date());
 				shop.setInputName(userName);
-				shop.setOrderStatus("0");
+				shop.setOrderStatus("1");
 				logger.info("今日尚未錄入店家，準備儲存至資料庫");
 				shopDao.save(shop);
 			} else {
@@ -289,7 +289,7 @@ public class ShopService {
 				shop.setShopId(placeId);
 				shop.setInputDate(new Date());
 				shop.setInputName(userName);
-				shop.setOrderStatus("0");
+				shop.setOrderStatus("1");
 				logger.info("今日尚未錄入店家，準備儲存至資料庫");
 				shopDao.save(shop);
 			} else {

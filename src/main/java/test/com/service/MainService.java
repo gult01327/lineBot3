@@ -60,7 +60,7 @@ public class MainService {
 	public FlexMessage getMainTemplate(MessageEvent<TextMessageContent> event) throws Exception {
 		logger.info("查詢main_oder：今日主檔");
 		List<Main> mainList = mainDao.findByinputDate(new Date());
-		if (mainList == null && mainList.size() < 1) {
+		if (mainList == null || mainList.size() < 1) {
 			logger.info("查詢main_oder：查無主檔");
 			FlexMessage flexMessage = FlexMessage.builder().altText("查無資料")
 					.contents(Carousel.builder().contents(null).build()).build();
@@ -101,7 +101,7 @@ public class MainService {
 	public FlexMessage findMainTemplate(MessageEvent<TextMessageContent> event) throws Exception {
 		logger.info("查詢main_oder：今日的主檔");
 		List<Main> mainList = mainDao.findByinputDate(new Date());
-		if (mainList == null && mainList.size() < 1) {
+		if (mainList == null || mainList.size() < 1) {
 			logger.info("查詢main_oder：查無主檔");
 			FlexMessage flexMessage = FlexMessage.builder().altText("查無資料")
 					.contents(Carousel.builder().contents(null).build()).build();

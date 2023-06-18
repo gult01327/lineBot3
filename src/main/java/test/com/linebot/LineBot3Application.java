@@ -257,7 +257,7 @@ public class LineBot3Application {
 				// 先檢核再更新Detail_ordere欄位order_no
 				Detail returnDetail = detailService.updateOrderNo(main.getOrderNo(), detailId);
 				if (returnDetail.getOrderNo() != null) {
-					return new TextMessage(userName + ",訂單編號：" + detailId + ",已選擇店家，不可修改");
+					return new TextMessage(userName + ",訂單編號：" + detailId + ",已選擇店家:"+main.getShopName());
 				} else {
 					return new TextMessage(userName + ",訂單編號：" + detailId + ",選取店家：" + shopName + "儲存成功");
 				}

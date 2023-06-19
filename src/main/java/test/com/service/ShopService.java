@@ -106,6 +106,8 @@ public class ShopService {
 		List<PlacesSearchResult> results = Arrays.asList(response.results);
 		int maxResults = Math.min(results.size(), 5); // 查詢5筆
 		List<Bubble> flexBubbles = new ArrayList<>();
+		//設定圖片顏色
+        String[] colors = { "#0000FF", "#FFFF00" };
 		for (int i = 0; i < maxResults; i++) {
 			PlacesSearchResult result = results.get(i);
 			String name = result.name; // 店名
@@ -149,7 +151,7 @@ public class ShopService {
 
 			// 建立訊息模板
 			Bubble bubble = Bubble.builder()
-					.body(Box.builder().layout(FlexLayout.VERTICAL).contents(Arrays.asList(
+					.body(Box.builder().layout(FlexLayout.VERTICAL).backgroundColor(colors[i % colors.length]) .contents(Arrays.asList(
 							Text.builder().text(name).weight(Text.TextWeight.BOLD).size(FlexFontSize.LG)
 									.margin(FlexMarginSize.NONE).build(),
 							Text.builder().text("評分: " + formattedRating + starIcon).size(FlexFontSize.SM).wrap(true)

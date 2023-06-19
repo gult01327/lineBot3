@@ -111,8 +111,7 @@ public class ShopService {
 			String name = result.name; // 店名
 
 			// 設定圖片
-			URI photoUrl = new URI(
-					"https://media.nownews.com/nn_media/thumbnail/2019/10/1570089924-27a9b9c9d7facd3422fe4610dd8ebe42-696x386.png");
+			URI photoUrl = new URI("https://i.imgur.com/dM6hTjh.png");
 
 			// 點擊圖片觸發的action
 			String placeId = result.placeId; // 取得店家ID
@@ -222,8 +221,7 @@ public class ShopService {
 			String address = result.vicinity;
 			double resultLatitude = result.geometry.location.lat; // 緯度
 			double resultLongitude = result.geometry.location.lng; // 經度
-			URI photoUrl = new URI(
-					"https://i.imgur.com/MTSxO9p.png");
+			URI photoUrl = new URI("https://i.imgur.com/dM6hTjh.png");
 
 			// 點擊圖片觸發的action
 			String placeId = result.placeId; // 取得店家ID
@@ -301,7 +299,6 @@ public class ShopService {
 				.contents(Carousel.builder().contents(flexBubbles).build()).build();
 		return flexMessage;
 	}
-
 
 	// 點單時先檢核店家
 	public FlexMessage findShopTemplate(MessageEvent<TextMessageContent> event, Long detailId) throws Exception {

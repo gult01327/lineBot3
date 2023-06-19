@@ -223,7 +223,7 @@ public class ShopService {
 			double resultLatitude = result.geometry.location.lat; // 緯度
 			double resultLongitude = result.geometry.location.lng; // 經度
 			URI photoUrl = new URI(
-					"https://media.nownews.com/nn_media/thumbnail/2019/10/1570089924-27a9b9c9d7facd3422fe4610dd8ebe42-696x386.png");
+					"https://i.imgur.com/MTSxO9p.png");
 
 			// 點擊圖片觸發的action
 			String placeId = result.placeId; // 取得店家ID

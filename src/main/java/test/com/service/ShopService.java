@@ -106,14 +106,16 @@ public class ShopService {
 		List<PlacesSearchResult> results = Arrays.asList(response.results);
 		int maxResults = Math.min(results.size(), 5); // 查詢5筆
 		List<Bubble> flexBubbles = new ArrayList<>();
+
 		// 設定圖片顏色
 		String[] colors = { "#DDF3FF", "#fff2b0" };
+
 		for (int i = 0; i < maxResults; i++) {
 			PlacesSearchResult result = results.get(i);
 			String name = result.name; // 店名
 
 			// 設定圖片
-			URI photoUrl = new URI("https://i.imgur.com/dM6hTjh.png");
+			URI photoUrl = new URI("https://i.imgur.com/PVu7Gi0.png");
 
 			// 點擊圖片觸發的action
 			String placeId = result.placeId; // 取得店家ID
@@ -217,13 +219,17 @@ public class ShopService {
 		int maxResults = Math.min(results.size(), 5); // 查詢5筆
 		List<Bubble> flexBubbles = new ArrayList<>();
 
+		// 設定圖片顏色
+		String[] colors = { "#DDF3FF", "#fff2b0" };
+
 		for (int i = 0; i < maxResults; i++) {
 			PlacesSearchResult result = results.get(i);
 			String name = result.name;
 			String address = result.vicinity;
 			double resultLatitude = result.geometry.location.lat; // 緯度
 			double resultLongitude = result.geometry.location.lng; // 經度
-			URI photoUrl = new URI("https://i.imgur.com/dM6hTjh.png");
+			//設定圖片
+			URI photoUrl = new URI("https://i.imgur.com/PVu7Gi0.png");
 
 			// 點擊圖片觸發的action
 			String placeId = result.placeId; // 取得店家ID
@@ -260,8 +266,9 @@ public class ShopService {
 			Action action = new URIAction("Open Map", new URI(mapWebUrl), null);
 
 			// 建立訊息模板
-			Bubble bubble = Bubble.builder()
-					.body(Box.builder().layout(FlexLayout.VERTICAL).contents(Arrays.asList(
+			Bubble bubble = Bubble.builder().body(Box.builder().layout(FlexLayout.VERTICAL)
+					.backgroundColor(colors[i % colors.length])
+					.contents(Arrays.asList(
 							Text.builder().text(name).weight(Text.TextWeight.BOLD).size(FlexFontSize.LG)
 									.margin(FlexMarginSize.NONE).build(),
 							Text.builder().text("評分: " + formattedRating + starIcon).size(FlexFontSize.SM).wrap(true)
@@ -274,8 +281,7 @@ public class ShopService {
 									.aspectMode(Image.ImageAspectMode.Cover).aspectRatio(Image.ImageAspectRatio.R1TO1)
 									.margin(FlexMarginSize.MD).action(action) // 設置點擊操作
 									.build()))
-							.build())
-					.build();
+					.build()).build();
 
 			flexBubbles.add(bubble);
 
